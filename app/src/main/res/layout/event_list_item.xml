@@ -13,7 +13,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="5dp"
-        android:background="#085CE2"
+        android:background="#2981E0"
         android:padding="10dp">
 
         <TextView
@@ -39,14 +39,13 @@
 
         <TextView
             android:id="@+id/location"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@android:color/white"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/time"
-            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintEnd_toStartOf="@id/time"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/description"
             tools:text="Event location" />
@@ -55,13 +54,13 @@
             android:id="@+id/time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:textColor="@android:color/white"
-            android:textSize="12sp"
+            android:textSize="11sp"
             app:layout_constraintBottom_toBottomOf="@id/location"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/location"
             app:layout_constraintTop_toTopOf="@+id/location"
+            tools:ignore="SmallSp"
             tools:text="Time" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
