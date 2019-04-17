@@ -18,16 +18,52 @@ import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SortedList;
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder>
         implements StickyHeaderAdapter<EventAdapter.HeaderViewHolder> {
     private static Calendar cal = Calendar.getInstance();
     private static DateFormat timeFormat = DateFormat.getTimeInstance();
-    private List<? extends BaseEvent> events;
+    private SortedList<BaseEvent> events = new SortedList<>(BaseEvent.class, new SortedList.Callback<BaseEvent>() {
+        @Override
+        public int compare(BaseEvent o1, BaseEvent o2) {
+            return o1.compareTo(o2);
+        }
+
+        @Override
+        public boolean areContentsTheSame(BaseEvent oldItem, BaseEvent newItem) {
+            return oldItem.equals(newItem);
+        }
+
+        @Override
+        public boolean areItemsTheSame(BaseEvent item1, BaseEvent item2) {
+            return item1.equals(item2);
+        }
+
+        @Override
+        public void onChanged(int position, int count) {
+
+        }
+
+        @Override
+        public void onInserted(int position, int count) {
+
+        }
+
+        @Override
+        public void onRemoved(int position, int count) {
+
+        }
+
+        @Override
+        public void onMoved(int fromPosition, int toPosition) {
+
+        }
+    });
 
     public EventAdapter(List<? extends BaseEvent> events) {
-        this.events = events;
+        this.events.addAll(events.toArray(new BaseEvent[0]), true);
     }
 
     @Override

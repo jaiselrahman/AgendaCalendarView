@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         events.add(new Event("Event 1", null, "Location 1", 0));
         events.add(new Event("Event 2", null, "Location 2", System.currentTimeMillis()));
         events.add(new Event("Event 3", "Description 3", null, 0));
+        events.add(new Event("Event 3", null, null, System.currentTimeMillis()));
         return events;
     }
 

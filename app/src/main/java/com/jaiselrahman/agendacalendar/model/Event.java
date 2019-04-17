@@ -14,6 +14,7 @@ public class Event implements BaseEvent {
     }
 
     @Override
+    @NonNull
     public String getTitle() {
         return title;
     }
