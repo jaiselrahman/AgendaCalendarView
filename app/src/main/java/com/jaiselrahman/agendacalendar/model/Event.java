@@ -2,11 +2,13 @@ package com.jaiselrahman.agendacalendar.model;
 
 import androidx.annotation.NonNull;
 
+import java.util.Calendar;
+
 public class Event implements BaseEvent {
     private String title, description, location;
-    private long time;
+    private Calendar time;
 
-    public Event(@NonNull String title, String description, String location, long time) {
+    public Event(@NonNull String title, String description, String location, Calendar time) {
         this.title = title;
         this.description = description;
         this.location = location;
@@ -30,7 +32,7 @@ public class Event implements BaseEvent {
     }
 
     @Override
-    public long getTime() {
+    public Calendar getTime() {
         return time;
     }
 }

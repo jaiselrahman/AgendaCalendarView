@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AgendaCalendar</string>
+    <string name="today">Today</string>
 </resources>

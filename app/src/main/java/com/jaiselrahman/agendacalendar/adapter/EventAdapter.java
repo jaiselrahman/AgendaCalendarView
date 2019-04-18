@@ -6,6 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SortedList;
+
 import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
@@ -14,11 +18,7 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SortedList;
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder>
@@ -68,7 +68,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     @Override
     public long getHeaderId(int position) {
-        return TimeUnit.MILLISECONDS.toDays(events.get(position).getTime());
+        Calendar cal = events.get(position).getTime();
+        return cal.get(Calendar.YEAR) * 1000 + cal.get(Calendar.DAY_OF_YEAR);
     }
 
     @Override
@@ -99,6 +100,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         return events == null ? 0 : events.size();
     }
 
+    public int getPosition(long time) {
+        cal.setTimeInMillis(time);
+        for (int i = 0; i < getItemCount(); i++) {
+            if (events.get(i).compareTo(cal) == 0) return i;
+        }
+        return -1;
+    }
+
     static class EventViewHolder extends RecyclerView.ViewHolder {
         private TextView title;
         private TextView description;
@@ -122,8 +131,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             location.setVisibility(TextUtils.isEmpty(event.getLocation()) ? View.GONE : View.VISIBLE);
             location.setText(event.getLocation());
 
-            time.setVisibility(event.getTime() <= 0 ? View.GONE : View.VISIBLE);
-            time.setText(timeFormat.format(event.getTime()));
+            time.setVisibility(event.getTime() != null ? View.GONE : View.VISIBLE);
+            time.setText(timeFormat.format(event.getTime().getTimeInMillis()));
         }
     }
 
@@ -137,10 +146,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
 
         void bind(BaseEvent event) {
-            cal.setTimeInMillis(event.getTime());
+            cal.setTimeInMillis(event.getTime().getTimeInMillis());
             date.setText(String.valueOf(cal.get(Calendar.DAY_OF_MONTH)));
             day.setText(cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()));
-            if (DateUtils.isToday(event.getTime())) {
+            if (DateUtils.isToday(event.getTime().getTimeInMillis())) {
                 itemView.setBackgroundResource(R.drawable.event_current_item_header);
             }
         }
