@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jaiselrahman.agendacalendar.adapter.EventAdapter;
-import com.jaiselrahman.agendacalendar.model.Event;
+import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
 import java.util.List;
 
@@ -31,6 +31,8 @@ public class AgendaView extends RecyclerView {
     public AgendaView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
+        if (isInEditMode()) return;
+
         super.setAdapter(eventAdapter);
 
         linearLayoutManager = new LinearLayoutManager(context);
@@ -39,7 +41,7 @@ public class AgendaView extends RecyclerView {
         addItemDecoration(new StickyHeaderDecoration(eventAdapter, false));
     }
 
-    public void setEvents(List<Event> events) {
+    public void setEvents(List<? extends BaseEvent> events) {
         eventAdapter.setEvents(events);
     }
 
@@ -57,12 +59,20 @@ public class AgendaView extends RecyclerView {
     @Override
     @RestrictTo(RestrictTo.Scope.LIBRARY)
     public final void setLayoutManager(@Nullable LayoutManager layout) {
+        if (isInEditMode()) {
+            super.setLayoutManager(layout);
+            return;
+        }
         throw new RuntimeException("LayoutManager cannot be changed");
     }
 
     @Override
     @RestrictTo(RestrictTo.Scope.LIBRARY)
     public final void setAdapter(@Nullable Adapter adapter) {
+        if (isInEditMode()) {
+            super.setAdapter(adapter);
+            return;
+        }
         throw new RuntimeException("Adapter should not be changed");
     }
 }

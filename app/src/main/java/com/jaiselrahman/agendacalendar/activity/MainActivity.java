@@ -1,10 +1,8 @@
 package com.jaiselrahman.agendacalendar.activity;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.Toast;
 
@@ -14,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.model.Event;
+import com.jaiselrahman.agendacalendar.view.AgendaCalendar;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,11 +20,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.jaiselrahman.agendacalendar.view.AgendaView;
-
 public class MainActivity extends AppCompatActivity {
-    private AgendaView agendaView;
-    private CompactCalendarView calendar;
+    private AgendaCalendar agendaCalendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,19 +34,19 @@ public class MainActivity extends AppCompatActivity {
 
         List<Event> events = mockEvents();
 
-        agendaView = findViewById(R.id.eventList);
-        agendaView.setEvents(events);
+        agendaCalendar = findViewById(R.id.calendar);
 
-        agendaView.setOnEventClickListener(event -> {
+        agendaCalendar.setEvents(events);
+
+        agendaCalendar.setOnEventClickListener(event -> {
             Toast.makeText(this, event.getTitle(), Toast.LENGTH_SHORT).show();
         });
 
-        calendar = findViewById(R.id.calendar);
-        calendar.setVisibility(View.GONE);
-        calendar.setListener(new CompactCalendarView.CompactCalendarViewListener() {
+
+        agendaCalendar.setListener(new CompactCalendarView.CompactCalendarViewListener() {
             @Override
             public void onDayClick(Date dateClicked) {
-                agendaView.scrollTo(dateClicked.getTime());
+                agendaCalendar.scrollTo(dateClicked.getTime());
             }
 
             @Override
@@ -59,23 +55,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        for (Event event : events) {
-            calendar.addEvent(new com.github.sundeepk.compactcalendarview.domain.Event(Color.BLUE, event.getTime().getTimeInMillis()));
-        }
-
         CheckedTextView currentMonth = findViewById(R.id.currentMonth);
         currentMonth.setText(Calendar.getInstance().getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()));
         currentMonth.setOnClickListener(v -> {
-            if (calendar.isAnimating()) return;
-
-            if (calendar.getVisibility() == View.GONE) {
-                calendar.setVisibility(View.VISIBLE);
-            }
-
             if (currentMonth.isChecked()) {
-                calendar.hideCalendar();
+                agendaCalendar.hideCalendar();
             } else {
-                calendar.showCalendar();
+                agendaCalendar.showCalendar();
             }
             currentMonth.setChecked(!currentMonth.isChecked());
         });
@@ -90,8 +76,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.today) {
-            agendaView.scrollTo(System.currentTimeMillis());
-            calendar.setCurrentDate(new Date());
+            agendaCalendar.scrollTo(System.currentTimeMillis());
             return true;
         }
         return super.onOptionsItemSelected(item);
