@@ -6,15 +6,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckedTextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.jaiselrahman.agendacalendar.R;
-import com.jaiselrahman.agendacalendar.adapter.EventAdapter;
 import com.jaiselrahman.agendacalendar.model.Event;
 
 import java.util.ArrayList;
@@ -23,11 +21,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderDecoration;
+import com.jaiselrahman.agendacalendar.view.AgendaView;
 
 public class MainActivity extends AppCompatActivity {
-    private LinearLayoutManager layoutManager;
-    private EventAdapter eventAdapter;
+    private AgendaView agendaView;
     private CompactCalendarView calendar;
 
     @Override
@@ -41,25 +38,19 @@ public class MainActivity extends AppCompatActivity {
 
         List<Event> events = mockEvents();
 
-        eventAdapter = new EventAdapter(events);
+        agendaView = findViewById(R.id.eventList);
+        agendaView.setEvents(events);
 
-        layoutManager = new LinearLayoutManager(this);
-        RecyclerView recyclerView = findViewById(R.id.eventList);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(eventAdapter);
-
-        StickyHeaderDecoration notificationHeader = new StickyHeaderDecoration(eventAdapter, false);
-        recyclerView.addItemDecoration(notificationHeader);
+        agendaView.setOnEventClickListener(event -> {
+            Toast.makeText(this, event.getTitle(), Toast.LENGTH_SHORT).show();
+        });
 
         calendar = findViewById(R.id.calendar);
         calendar.setVisibility(View.GONE);
         calendar.setListener(new CompactCalendarView.CompactCalendarViewListener() {
             @Override
             public void onDayClick(Date dateClicked) {
-                int pos = eventAdapter.getPosition(dateClicked.getTime());
-                if (pos >= 0) {
-                    layoutManager.scrollToPositionWithOffset(pos, 0);
-                }
+                agendaView.scrollTo(dateClicked.getTime());
             }
 
             @Override
@@ -99,10 +90,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.today) {
-            int pos = eventAdapter.getPosition(System.currentTimeMillis());
-            if (pos >= 0) {
-                layoutManager.scrollToPositionWithOffset(pos, 0);
-            }
+            agendaView.scrollTo(System.currentTimeMillis());
             calendar.setCurrentDate(new Date());
             return true;
         }

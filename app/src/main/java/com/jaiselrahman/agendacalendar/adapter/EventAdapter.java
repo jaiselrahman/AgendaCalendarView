@@ -25,6 +25,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         implements StickyHeaderAdapter<EventAdapter.HeaderViewHolder> {
     private static Calendar cal = Calendar.getInstance();
     private static DateFormat timeFormat = DateFormat.getTimeInstance();
+
+    private OnEventClickListener onEventClickListener;
+
     private SortedList<BaseEvent> events = new SortedList<>(BaseEvent.class, new SortedList.Callback<BaseEvent>() {
         @Override
         public int compare(BaseEvent o1, BaseEvent o2) {
@@ -62,7 +65,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
     });
 
-    public EventAdapter(List<? extends BaseEvent> events) {
+    public void setEvents(List<? extends BaseEvent> events) {
         this.events.addAll(events.toArray(new BaseEvent[0]), true);
     }
 
@@ -87,7 +90,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_list_item, parent, false);
-        return new EventViewHolder(v);
+        return new EventViewHolder(v, onEventClickListener);
     }
 
     @Override
@@ -108,21 +111,34 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         return -1;
     }
 
+    public void setOnEventClickListener(OnEventClickListener onEventClickListener) {
+        this.onEventClickListener = onEventClickListener;
+    }
+
+    public interface OnEventClickListener {
+        void onEventClick(BaseEvent event);
+    }
+
     static class EventViewHolder extends RecyclerView.ViewHolder {
         private TextView title;
         private TextView description;
         private TextView location;
         private TextView time;
+        private BaseEvent event;
 
-        EventViewHolder(@NonNull View v) {
+        EventViewHolder(@NonNull View v, OnEventClickListener onEventClickListener) {
             super(v);
             title = v.findViewById(R.id.title);
             description = v.findViewById(R.id.description);
             location = v.findViewById(R.id.location);
             time = v.findViewById(R.id.time);
+
+            v.setOnClickListener(v1 -> onEventClickListener.onEventClick(event));
         }
 
         void bind(BaseEvent event) {
+            this.event = event;
+
             this.title.setText(event.getTitle());
 
             description.setVisibility(TextUtils.isEmpty(event.getDescription()) ? View.GONE : View.VISIBLE);

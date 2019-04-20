@@ -21,7 +21,7 @@
         app:compactCalendarTextColor="@android:color/white"
         app:compactCalendarTextSize="14sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.jaiselrahman.agendacalendar.view.AgendaView
         android:id="@+id/eventList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
