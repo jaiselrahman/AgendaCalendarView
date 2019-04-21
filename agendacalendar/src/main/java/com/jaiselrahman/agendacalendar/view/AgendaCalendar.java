@@ -88,7 +88,11 @@ public class AgendaCalendar extends LinearLayout {
         compactCalendarView.setIndicatorAnimDuration(durationMillis);
     }
 
-    public void setListener(CompactCalendarView.CompactCalendarViewListener compactCalendarViewListener) {
+    public void setListener(CalendarViewListener compactCalendarViewListener) {
         compactCalendarView.setListener(compactCalendarViewListener);
+    }
+
+    public static interface CalendarViewListener
+            extends CompactCalendarView.CompactCalendarViewListener {
     }
 }

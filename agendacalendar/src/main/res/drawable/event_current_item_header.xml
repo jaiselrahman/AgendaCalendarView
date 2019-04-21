@@ -9,6 +9,6 @@
     <shape android:shape="oval">
         <stroke
             android:width="2dp"
-            android:color="@color/colorPrimary" />
+            android:color="?attr/colorPrimary" />
     </shape>
 </inset>

@@ -1,6 +1,8 @@
-package com.jaiselrahman.agendacalendar.model;
+package com.jaiselrahman.agendacalendarsample.model;
 
 import androidx.annotation.NonNull;
+
+import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
 import java.util.Calendar;
 

@@ -1,4 +1,4 @@
-package com.jaiselrahman.agendacalendar.activity;
+package com.jaiselrahman.agendacalendarsample.activity;
 
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,10 +9,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.github.sundeepk.compactcalendarview.CompactCalendarView;
-import com.jaiselrahman.agendacalendar.R;
-import com.jaiselrahman.agendacalendar.model.Event;
 import com.jaiselrahman.agendacalendar.view.AgendaCalendar;
+import com.jaiselrahman.agendacalendarsample.R;
+import com.jaiselrahman.agendacalendarsample.model.Event;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        agendaCalendar.setListener(new CompactCalendarView.CompactCalendarViewListener() {
+        agendaCalendar.setListener(new AgendaCalendar.CalendarViewListener() {
             @Override
             public void onDayClick(Date dateClicked) {
                 agendaCalendar.scrollTo(dateClicked.getTime());
