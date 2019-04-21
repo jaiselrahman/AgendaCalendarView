@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
             }
             currentMonth.setChecked(!currentMonth.isChecked());
         });
+
+        agendaCalendar.setHeightAnimDuration(250);
     }
 
     @Override
