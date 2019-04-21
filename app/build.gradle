@@ -29,6 +29,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0-alpha04'
     implementation 'com.google.android.material:material:1.0.0'
 
-    implementation 'com.github.sundeepk:compact-calendar-view:3.0.0'
+    implementation 'com.github.jaiselrahman:compactcalendarview:3.1.0'
     implementation 'com.github.edubarr:header-decor:0.2.7'
 }
