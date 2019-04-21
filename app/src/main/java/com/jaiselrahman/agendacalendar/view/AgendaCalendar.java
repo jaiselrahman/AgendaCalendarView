@@ -15,7 +15,6 @@ import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.adapter.EventAdapter;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
-import java.util.Date;
 import java.util.List;
 
 public class AgendaCalendar extends LinearLayout {
@@ -63,7 +62,7 @@ public class AgendaCalendar extends LinearLayout {
 
     public void scrollTo(long time) {
         agendaView.scrollTo(time);
-        compactCalendarView.setCurrentDate(new Date(time));
+        compactCalendarView.setCurrentDate(time);
     }
 
     public void setOnEventClickListener(EventAdapter.OnEventClickListener onEventClickListener) {
