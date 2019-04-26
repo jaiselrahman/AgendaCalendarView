@@ -1,5 +1,6 @@
 package com.jaiselrahman.agendacalendarsample.activity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -85,15 +86,45 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Event> mockEvents() {
         List<Event> events = new ArrayList<>();
-        int curDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-        for (int i = 0; i < 10; i++) {
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.DAY_OF_MONTH, curDay + i + (i % 2));
-            events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH), "Description " + i, "Location " + i, cal));
+        for (int i = 1; i <= 31; i++) {
+            if (i % 2 == 0) {
+                events.addAll(getEvents(i, 1));
+            } else if (i % 3 == 0) {
+                events.addAll(getEvents(i, 2));
+            } else if (i % 5 == 0) {
+                events.addAll(getEvents(i, 3));
+            } else {
+                events.addAll(getEvents(i, 4));
+            }
         }
-        events.add(new Event("Event 1", null, "Location 1", Calendar.getInstance()));
-        events.add(new Event("Event 2", null, "Location 2", Calendar.getInstance()));
-        events.add(new Event("Event 3", "Description 3", null, Calendar.getInstance()));
+        return events;
+    }
+
+    private List<Event> getEvents(int day, int count) {
+        List<Event> events = new ArrayList<>();
+        Calendar cal;
+        switch (count) {
+            case 4:
+                cal = Calendar.getInstance();
+                cal.set(Calendar.DAY_OF_MONTH, day);
+                events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH),
+                        "Description " + day, "Location " + day, cal, Color.RED));
+            case 3:
+                cal = Calendar.getInstance();
+                cal.set(Calendar.DAY_OF_MONTH, day);
+                events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH),
+                        "Description " + day, "Location " + day, cal, Color.GREEN));
+            case 2:
+                cal = Calendar.getInstance();
+                cal.set(Calendar.DAY_OF_MONTH, day);
+                events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH),
+                        "Description " + day, "Location " + day, cal, Color.BLUE));
+            case 1:
+                cal = Calendar.getInstance();
+                cal.set(Calendar.DAY_OF_MONTH, day);
+                events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH),
+                        "Description " + day, "Location " + day, cal, Color.MAGENTA));
+        }
         return events;
     }
 
