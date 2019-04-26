@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.Calendar;
 
-public interface BaseEvent extends Comparable {
+public interface BaseEvent extends Comparable, com.github.sundeepk.compactcalendarview.domain.BaseEvent {
 
     @NonNull
     String getTitle();
@@ -17,6 +17,16 @@ public interface BaseEvent extends Comparable {
 
     default String getLocation() {
         return null;
+    }
+
+    @Override
+    default long getTimeInMillis() {
+        if (getTime() == null) return 0;
+        return getTime().getTimeInMillis();
+    }
+
+    default int getColor() {
+        return 0;
     }
 
     @Override
