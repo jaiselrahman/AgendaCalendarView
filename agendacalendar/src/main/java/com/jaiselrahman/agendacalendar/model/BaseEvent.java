@@ -1,6 +1,7 @@
 package com.jaiselrahman.agendacalendar.model;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Calendar;
 
@@ -46,6 +47,38 @@ public interface BaseEvent extends Comparable, com.github.sundeepk.compactcalend
             return 0;
         } else {
             return curr.compareTo(other);
+        }
+    }
+
+    class Empty implements BaseEvent {
+        private Calendar time;
+
+        public Empty(Calendar time) {
+            this.time = time;
+        }
+
+        @NonNull
+        @Override
+        public String getTitle() {
+            return "No Events";
+        }
+
+        @Override
+        public Calendar getTime() {
+            return time;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (obj instanceof Empty) {
+                return true;
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return 0;
         }
     }
 }

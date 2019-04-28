@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 events.addAll(getEvents(i, 2));
             } else if (i % 5 == 0) {
                 events.addAll(getEvents(i, 3));
-            } else {
+            } else if (i == 1) {
                 events.addAll(getEvents(i, 4));
             }
         }

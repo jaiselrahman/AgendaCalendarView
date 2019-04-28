@@ -16,6 +16,7 @@ import com.jaiselrahman.agendacalendar.util.DateUtils;
 
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,6 +24,9 @@ import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder>
         implements StickyHeaderAdapter<EventAdapter.HeaderViewHolder> {
+    private static final int EVENT = 0;
+    private static final int EMPTY_EVENT = 1;
+
     private static Calendar cal = Calendar.getInstance();
     private static DateFormat timeFormat = DateFormat.getTimeInstance();
 
@@ -65,8 +69,37 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
     });
 
-    public void setEvents(List<? extends BaseEvent> events) {
-        this.events.addAll(events.toArray(new BaseEvent[0]), true);
+    public void setEvents(List<BaseEvent> events) {
+        //noinspection unchecked
+        Collections.sort(events);
+
+        int toBeAdded = 0, eventSize = events.size();
+        BaseEvent lastChecked = events.get(toBeAdded);
+
+        while (toBeAdded < eventSize) {
+            boolean hasEvent = false;
+
+            for (int j = toBeAdded; j < eventSize; ) {
+                BaseEvent event = events.get(j);
+                long dayDiff = DateUtils.dayDiff(event.getTimeInMillis(), lastChecked.getTimeInMillis());
+                if (dayDiff <= 1) {
+                    lastChecked = event;
+                    hasEvent = true;
+                    toBeAdded = ++j;
+                } else {
+                    break;
+                }
+            }
+
+            if (!hasEvent) {
+                Calendar cal = (Calendar) lastChecked.getTime().clone();
+                cal.add(Calendar.DAY_OF_MONTH, 1);
+                lastChecked = new BaseEvent.Empty(cal);
+                events.add(lastChecked);
+            }
+        }
+
+        this.events.addAll(events);
     }
 
     @Override
@@ -89,13 +122,23 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_list_item, parent, false);
+        int layout = viewType == EVENT ? R.layout.event_list_item : R.layout.event_list_empty_item;
+        View v = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
         return new EventViewHolder(v, onEventClickListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        holder.bind(events.get(position));
+        if (getItemViewType(position) == EVENT)
+            holder.bind(events.get(position));
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (events.get(position) instanceof BaseEvent.Empty) {
+            return EMPTY_EVENT;
+        }
+        return EVENT;
     }
 
     @Override
