@@ -1,6 +1,7 @@
 package com.jaiselrahman.agendacalendarsample.model;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
@@ -43,5 +44,15 @@ public class Event implements BaseEvent {
     @Override
     public int getColor() {
         return color;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj instanceof Event) {
+            Event event = (Event) obj;
+            return time == event.getTime()
+                    && title.equals(event.getTitle());
+        }
+        return super.equals(obj);
     }
 }

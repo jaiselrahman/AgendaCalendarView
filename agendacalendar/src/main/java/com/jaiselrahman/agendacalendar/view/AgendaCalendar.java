@@ -58,6 +58,26 @@ public class AgendaCalendar extends LinearLayout {
         compactCalendarView.addEvents(events);
     }
 
+    public void addEvent(BaseEvent event) {
+        agendaView.addEvent(event);
+        compactCalendarView.addEvent(event);
+    }
+
+    public void addEvents(List<? extends BaseEvent> events) {
+        agendaView.addEvents(events);
+        compactCalendarView.addEvents(events);
+    }
+
+    public void removeEvent(BaseEvent event) {
+        agendaView.removeEvent(event);
+        compactCalendarView.removeEvent(event);
+    }
+
+    public void removeEvents(List<? extends BaseEvent> events) {
+        agendaView.removeEvents(events);
+        compactCalendarView.removeEvents(events);
+    }
+
     public void scrollTo(long time) {
         agendaView.scrollTo(time);
         compactCalendarView.setCurrentDate(time);

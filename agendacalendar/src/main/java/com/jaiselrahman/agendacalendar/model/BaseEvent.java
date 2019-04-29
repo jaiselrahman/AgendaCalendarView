@@ -50,7 +50,7 @@ public interface BaseEvent extends Comparable, com.github.sundeepk.compactcalend
         }
     }
 
-    class Empty implements BaseEvent {
+    final class Empty implements BaseEvent {
         private Calendar time;
 
         public Empty(Calendar time) {
@@ -69,9 +69,13 @@ public interface BaseEvent extends Comparable, com.github.sundeepk.compactcalend
         }
 
         @Override
-        public boolean equals(@Nullable Object obj) {
+        public final boolean equals(@Nullable Object obj) {
             if (obj instanceof Empty) {
-                return true;
+                Calendar other = ((Empty) obj).getTime();
+                if (time.get(Calendar.YEAR) == other.get(Calendar.YEAR)
+                        && time.get(Calendar.DAY_OF_YEAR) == other.get(Calendar.DAY_OF_YEAR)) {
+                    return true;
+                }
             }
             return super.equals(obj);
         }

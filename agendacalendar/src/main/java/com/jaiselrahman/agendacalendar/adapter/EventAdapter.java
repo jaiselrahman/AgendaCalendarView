@@ -15,8 +15,8 @@ import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -32,7 +32,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private OnEventClickListener onEventClickListener;
 
-    private SortedList<BaseEvent> events = new SortedList<>(BaseEvent.class, new SortedList.Callback<BaseEvent>() {
+    private SortedList<BaseEvent> eventItems = new SortedList<>(BaseEvent.class, new SortedList.Callback<BaseEvent>() {
         @Override
         public int compare(BaseEvent o1, BaseEvent o2) {
             return o1.compareTo(o2);
@@ -50,37 +50,99 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         @Override
         public void onChanged(int position, int count) {
-
+            notifyItemChanged(position, count);
         }
 
         @Override
         public void onInserted(int position, int count) {
-
+            notifyItemRangeInserted(position, count);
         }
 
         @Override
         public void onRemoved(int position, int count) {
-
+            notifyItemRangeRemoved(position, count);
         }
 
         @Override
         public void onMoved(int fromPosition, int toPosition) {
-
+            notifyItemMoved(fromPosition, toPosition);
         }
     });
 
     public void setEvents(List<BaseEvent> events) {
-        //noinspection unchecked
-        Collections.sort(events);
+        eventItems.beginBatchedUpdates();
 
-        int toBeAdded = 0, eventSize = events.size();
-        BaseEvent lastChecked = events.get(toBeAdded);
+        eventItems.replaceAll(events);
+        fillNoEvents();
+
+        eventItems.endBatchedUpdates();
+    }
+
+    public <T extends BaseEvent> void addEvent(T event) {
+        int pos = eventItems.indexOf(new BaseEvent.Empty(event.getTime()));
+        if (pos != SortedList.INVALID_POSITION) {
+            eventItems.removeItemAt(pos);
+        }
+        eventItems.add(event);
+    }
+
+    public void addEvents(List<BaseEvent> events) {
+        if (events.isEmpty()) return;
+
+        if (events.size() == 1) {
+            addEvent(events.get(0));
+        }
+
+        eventItems.beginBatchedUpdates();
+
+        for (BaseEvent event : events) {
+            int pos = eventItems.indexOf(new BaseEvent.Empty(event.getTime()));
+            if (pos != SortedList.INVALID_POSITION) {
+                eventItems.removeItemAt(pos);
+            }
+        }
+
+        eventItems.addAll(events);
+        fillNoEvents();
+
+        eventItems.endBatchedUpdates();
+    }
+
+    public void removeEvent(BaseEvent event) {
+        int pos = eventItems.indexOf(event);
+
+        eventItems.remove(event);
+
+        long dayDiff = pos < 0 || pos >= eventItems.size() ? 0 :
+                DateUtils.dayDiff(eventItems.get(pos).getTimeInMillis(),
+                        eventItems.get(pos - 1).getTimeInMillis());
+
+        if (dayDiff > 1) {
+            eventItems.add(new BaseEvent.Empty(event.getTime()));
+        }
+    }
+
+    public void removeEvents(List<BaseEvent> events) {
+        eventItems.beginBatchedUpdates();
+
+        for (BaseEvent event : events) {
+            removeEvent(event);
+        }
+
+        eventItems.endBatchedUpdates();
+    }
+
+    private void fillNoEvents() {
+        List<BaseEvent> emptyEvents = new ArrayList<>();
+
+        int toBeAdded = 0, eventSize = eventItems.size();
+        BaseEvent lastChecked = eventItems.get(toBeAdded);
 
         while (toBeAdded < eventSize) {
             boolean hasEvent = false;
 
             for (int j = toBeAdded; j < eventSize; ) {
-                BaseEvent event = events.get(j);
+                BaseEvent event = eventItems.get(j);
                 long dayDiff = DateUtils.dayDiff(event.getTimeInMillis(), lastChecked.getTimeInMillis());
                 if (dayDiff <= 1) {
                     lastChecked = event;
@@ -95,16 +157,16 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 Calendar cal = (Calendar) lastChecked.getTime().clone();
                 cal.add(Calendar.DAY_OF_MONTH, 1);
                 lastChecked = new BaseEvent.Empty(cal);
-                events.add(lastChecked);
+                emptyEvents.add(lastChecked);
             }
         }
 
-        this.events.addAll(events);
+        eventItems.addAll(emptyEvents);
     }
 
     @Override
     public long getHeaderId(int position) {
-        Calendar cal = events.get(position).getTime();
+        Calendar cal = eventItems.get(position).getTime();
         return cal.get(Calendar.YEAR) * 1000 + cal.get(Calendar.DAY_OF_YEAR);
     }
 
@@ -116,7 +178,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     @Override
     public void onBindHeaderViewHolder(HeaderViewHolder headerViewHolder, int position) {
-        headerViewHolder.bind(events.get(position));
+        headerViewHolder.bind(eventItems.get(position));
     }
 
     @NonNull
@@ -130,12 +192,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         if (getItemViewType(position) == EVENT)
-            holder.bind(events.get(position));
+            holder.bind(eventItems.get(position));
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (events.get(position) instanceof BaseEvent.Empty) {
+        if (eventItems.get(position) instanceof BaseEvent.Empty) {
             return EMPTY_EVENT;
         }
         return EVENT;
@@ -143,13 +205,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     @Override
     public int getItemCount() {
-        return events == null ? 0 : events.size();
+        return eventItems == null ? 0 : eventItems.size();
     }
 
     public int getPosition(long time) {
         cal.setTimeInMillis(time);
         for (int i = 0; i < getItemCount(); i++) {
-            if (events.get(i).compareTo(cal) == 0) return i;
+            if (eventItems.get(i).compareTo(cal) == 0) return i;
         }
         return -1;
     }
