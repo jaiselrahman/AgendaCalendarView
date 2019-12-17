@@ -7,13 +7,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.collection.LongSparseArray;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SortedList;
 
 import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
+import com.jaiselrahman.agendacalendar.util.EventCache;
 import com.jaiselrahman.agendacalendar.util.EventUtils;
 
 import java.text.DateFormat;
@@ -22,7 +22,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
 
@@ -33,8 +32,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private static Calendar cal = Calendar.getInstance();
     private static DateFormat timeFormat = DateFormat.getTimeInstance();
-
-    private LongSparseArray<List<BaseEvent>> eventCache = new LongSparseArray<>();
 
     private OnEventClickListener onEventClickListener;
 
@@ -75,12 +72,36 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
     });
 
+    private EventCache.Loader eventLoader = time -> {
+        int pos = getPosition(time);
+        if (pos == -1) {
+            return Collections.emptyList();
+        }
+
+        List<BaseEvent> events = new ArrayList<>();
+
+        BaseEvent event = eventItems.get(pos);
+        events.add(event);
+
+        for (int i = pos + 1; i < eventItems.size(); i++) {
+            BaseEvent nextEvent = eventItems.get(i);
+            if (event.compareTo(nextEvent) != 0) {
+                break;
+            } else {
+                events.add(nextEvent);
+                event = nextEvent;
+            }
+        }
+
+        return events;
+    };
+
     public void setEvents(List<BaseEvent> events) {
         eventItems.beginBatchedUpdates();
 
         eventItems.replaceAll(events);
         fillNoEvents();
-        eventCache.clear();
+        EventCache.clear();
 
         eventItems.endBatchedUpdates();
     }
@@ -167,42 +188,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     public List<BaseEvent> getEventsOn(long time) {
-        long key = getCacheKey(time);
-
-        List<BaseEvent> events = eventCache.get(key);
-
-        if (events != null) {
-            return events;
-        }
-
-        int pos = getPosition(time);
-        if (pos == -1) {
-            eventCache.put(key, Collections.emptyList());
-            return Collections.emptyList();
-        }
-
-        events = new ArrayList<>();
-
-        BaseEvent event = eventItems.get(pos);
-        events.add(event);
-
-        for (int i = pos + 1; i < eventItems.size(); i++) {
-            BaseEvent nextEvent = eventItems.get(i);
-            if (event.compareTo(nextEvent) != 0) {
-                break;
-            } else {
-                events.add(nextEvent);
-                event = nextEvent;
-            }
-        }
-
-        eventCache.put(key, events);
-
-        return events;
-    }
-
-    private long getCacheKey(long time) {
-        return TimeUnit.MILLISECONDS.toDays(time);
+        return EventCache.getEvents(time, eventLoader);
     }
 
     public void setOnEventClickListener(OnEventClickListener onEventClickListener) {
