@@ -48,24 +48,6 @@ public class AgendaView extends RecyclerView {
         eventAdapter.setEvents((List<BaseEvent>) events);
     }
 
-    public void addEvent(BaseEvent event) {
-        eventAdapter.addEvent(event);
-    }
-
-    public void addEvents(List<? extends BaseEvent> events) {
-        //noinspection unchecked
-        eventAdapter.addEvents((List<BaseEvent>) events);
-    }
-
-    public void removeEvent(BaseEvent event) {
-        eventAdapter.removeEvent(event);
-    }
-
-    public void removeEvents(List<? extends BaseEvent> events) {
-        //noinspection unchecked
-        eventAdapter.removeEvents((List<BaseEvent>) events);
-    }
-
     public void scrollTo(long time) {
         int pos = eventAdapter.getPosition(time);
         if (pos >= 0) {

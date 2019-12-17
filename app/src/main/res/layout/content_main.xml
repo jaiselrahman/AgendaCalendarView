@@ -4,13 +4,4 @@
     android:id="@+id/calendar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:compactCalendarBackgroundColor="@color/colorPrimary"
-    app:compactCalendarCurrentDayBackgroundColor="@color/colorAccent"
-    app:compactCalendarCurrentSelectedDayBackgroundColor="@color/colorPrimaryDark"
-    app:compactCalendarDisplayOtherMonthDays="true"
-    app:compactCalendarOtherMonthDaysTextColor="#D5D5D5"
-    app:compactCalendarShouldSelectFirstDayOfMonthOnScroll="false"
-    app:compactCalendarTargetHeight="200dp"
-    app:compactCalendarTextColor="@android:color/white"
-    app:compactCalendarTextSize="14sp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" />

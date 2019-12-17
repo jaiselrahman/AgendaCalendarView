@@ -1,23 +1,50 @@
 package com.jaiselrahman.agendacalendar.view;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.adapter.EventAdapter;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
+import com.jaiselrahman.agendacalendar.util.DateUtils;
+import com.kizitonwose.calendarview.CalendarView;
+import com.kizitonwose.calendarview.model.CalendarDay;
+import com.kizitonwose.calendarview.model.CalendarMonth;
+import com.kizitonwose.calendarview.model.DayOwner;
+import com.kizitonwose.calendarview.model.ScrollMode;
+import com.kizitonwose.calendarview.ui.DayBinder;
+import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder;
+import com.kizitonwose.calendarview.ui.ViewContainer;
 
+import org.jetbrains.annotations.NotNull;
+import org.threeten.bp.DateTimeUtils;
+import org.threeten.bp.DayOfWeek;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.YearMonth;
+import org.threeten.bp.temporal.WeekFields;
+
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
+import kotlin.Unit;
 
 public class AgendaCalendar extends LinearLayout {
-    private CompactCalendarView compactCalendarView;
+    private CalendarView calendarView;
     private AgendaView agendaView;
+    private CalenderListener calenderListener;
 
     public AgendaCalendar(Context context) {
         this(context, null);
@@ -41,46 +68,64 @@ public class AgendaCalendar extends LinearLayout {
     private void init(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         setOrientation(VERTICAL);
 
-        compactCalendarView = new CompactCalendarView(context, attrs, defStyleAttr);
-        compactCalendarView.setVisibility(GONE);
-        compactCalendarView.setId(R.id.calendar_view);
-        addView(compactCalendarView);
+        calendarView = new CalendarView(context);
+        calendarView.setId(R.id.calendar_view);
+
+        YearMonth currentYearMonth = YearMonth.now();
+        YearMonth firstMonth = currentYearMonth.minusMonths(10);
+        YearMonth lastMonth = currentYearMonth.plusMonths(10);
+        DayOfWeek firstDayOfWeek = WeekFields.of(Locale.getDefault()).getFirstDayOfWeek();
+
+        calendarView.setScrollMode(ScrollMode.PAGED);
+        calendarView.setOrientation(RecyclerView.HORIZONTAL);
+        calendarView.setDayViewResource(R.layout.calendar_day_layout);
+        calendarView.setup(firstMonth, lastMonth, firstDayOfWeek);
+
+        int dayHeight = getResources().getDimensionPixelSize(R.dimen.calendar_day_height);
+
+        calendarView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+        calendarView.setDayHeight(dayHeight);
+        calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
+
+        calendarView.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dayHeight * 7));
+        addView(calendarView);
 
         agendaView = new AgendaView(context, attrs, defStyleAttr);
         agendaView.setId(R.id.agenda_view);
         addView(agendaView);
+
+
+        calendarView.setDayBinder(new CDayBinder((EventAdapter) agendaView.getAdapter()));
+        calendarView.setMonthHeaderBinder(new CMonthHeaderBinder());
+        calendarView.setMonthHeaderResource(R.layout.calendar_header);
+
+        calendarView.scrollToMonth(currentYearMonth);
+
+        calendarView.setMonthScrollListener(calendarMonth -> {
+            if (calenderListener != null) {
+                calenderListener.onMonthScroll(DateTimeUtils.toSqlDate(calendarMonth.getYearMonth().atDay(1)));
+            }
+            return Unit.INSTANCE;
+        });
     }
 
     public void setEvents(List<? extends BaseEvent> events) {
         agendaView.setEvents(events);
         agendaView.scrollTo(System.currentTimeMillis());
-        compactCalendarView.removeAllEvents();
-        compactCalendarView.addEvents(events);
-    }
-
-    public void addEvent(BaseEvent event) {
-        agendaView.addEvent(event);
-        compactCalendarView.addEvent(event);
-    }
-
-    public void addEvents(List<? extends BaseEvent> events) {
-        agendaView.addEvents(events);
-        compactCalendarView.addEvents(events);
-    }
-
-    public void removeEvent(BaseEvent event) {
-        agendaView.removeEvent(event);
-        compactCalendarView.removeEvent(event);
-    }
-
-    public void removeEvents(List<? extends BaseEvent> events) {
-        agendaView.removeEvents(events);
-        compactCalendarView.removeEvents(events);
     }
 
     public void scrollTo(long time) {
+        scrollAgendaViewTo(time);
+        scrollCalendarTo(time);
+    }
+
+    public void scrollAgendaViewTo(long time) {
         agendaView.scrollTo(time);
-        compactCalendarView.setCurrentDate(time);
+    }
+
+    public void scrollCalendarTo(long time) {
+        LocalDate date = DateTimeUtils.toLocalDate(new java.sql.Date(time));
+        calendarView.smoothScrollToMonth(YearMonth.of(date.getYear(), date.getMonth()));
     }
 
     public void setOnEventClickListener(EventAdapter.OnEventClickListener onEventClickListener) {
@@ -88,29 +133,112 @@ public class AgendaCalendar extends LinearLayout {
     }
 
     public void showCalendar() {
-        if (compactCalendarView.getVisibility() == GONE) {
-            compactCalendarView.setVisibility(VISIBLE);
-        }
-        compactCalendarView.showCalendar();
+        calendarView.setVisibility(VISIBLE);
     }
 
     public void hideCalendar() {
-        compactCalendarView.hideCalendar();
+        calendarView.setVisibility(GONE);
     }
 
-    public void setHeightAnimDuration(int durationMillis) {
-        compactCalendarView.setHeightAnimDuration(durationMillis);
+    public void setListener(CalenderListener calenderListener) {
+        this.calenderListener = calenderListener;
+        ((CDayBinder) calendarView.getDayBinder()).setCalenderListener(calenderListener);
     }
 
-    public void setIndicatorAnimDuration(int durationMillis) {
-        compactCalendarView.setIndicatorAnimDuration(durationMillis);
+    public interface CalenderListener {
+        void onDayClick(Date dateClicked);
+
+        void onMonthScroll(Date firstDayOfNewMonth);
     }
 
-    public void setListener(CalendarViewListener compactCalendarViewListener) {
-        compactCalendarView.setListener(compactCalendarViewListener);
+    private static class CDayBinder implements DayBinder<DayViewContainer> {
+        private EventAdapter eventAdapter;
+        private CalenderListener calenderListener;
+
+        CDayBinder(EventAdapter eventAdapter) {
+            this.eventAdapter = eventAdapter;
+        }
+
+        @Override
+        @NonNull
+        public DayViewContainer create(@NonNull View view) {
+            return new DayViewContainer(view, calenderListener);
+        }
+
+        @Override
+        public void bind(DayViewContainer container, @NotNull CalendarDay day) {
+            long time = TimeUnit.DAYS.toMillis(day.getDate().toEpochDay());
+            List<BaseEvent> events = eventAdapter.getEventsOn(time);
+
+            int[] eventColors = new int[events.size()];
+            for (int i = 0; i < eventColors.length; i++) {
+                eventColors[i] = events.get(i).getColor();
+            }
+            container.bind(day, eventColors);
+        }
+
+        void setCalenderListener(CalenderListener calenderListener) {
+            this.calenderListener = calenderListener;
+        }
     }
 
-    public static interface CalendarViewListener
-            extends CompactCalendarView.CompactCalendarViewListener {
+    private static class DayViewContainer extends ViewContainer {
+        private CalendarDay currentDay;
+        private TextView textView;
+        private EventIndicatorView indicator;
+
+        DayViewContainer(View view, CalenderListener calenderListener) {
+            super(view);
+            textView = view.findViewById(R.id.calendarDayText);
+            indicator = view.findViewById(R.id.eventIndicator);
+
+            view.setOnClickListener(v -> calenderListener.onDayClick(DateTimeUtils.toSqlDate(currentDay.getDate())));
+        }
+
+        void bind(CalendarDay calendarDay, int[] eventColors) {
+            currentDay = calendarDay;
+
+            textView.setText(String.valueOf(calendarDay.getDate().getDayOfMonth()));
+            if (calendarDay.getOwner() == DayOwner.THIS_MONTH) {
+                textView.setTextColor(Color.BLACK);
+            } else {
+                textView.setTextColor(Color.GRAY);
+            }
+
+            indicator.setEventColors(eventColors);
+        }
+    }
+
+    private static class CMonthHeaderBinder implements MonthHeaderFooterBinder<MonthHeaderContainer> {
+        @Override
+        public void bind(@NotNull MonthHeaderContainer monthHeaderContainer, @NotNull CalendarMonth calendarMonth) {
+        }
+
+        @NotNull
+        @Override
+        public MonthHeaderContainer create(@NotNull View view) {
+            return new MonthHeaderContainer(view);
+        }
+    }
+
+    private static class MonthHeaderContainer extends ViewContainer {
+        private static final String[] DAYS_OF_WEEK = DateUtils.getDaysOfWeek();
+
+        MonthHeaderContainer(View v) {
+            super(v);
+
+            TextView[] weekDays = new TextView[7];
+            weekDays[0] = v.findViewById(R.id.weekDay1);
+            weekDays[1] = v.findViewById(R.id.weekDay2);
+            weekDays[2] = v.findViewById(R.id.weekDay3);
+            weekDays[3] = v.findViewById(R.id.weekDay4);
+            weekDays[4] = v.findViewById(R.id.weekDay5);
+            weekDays[5] = v.findViewById(R.id.weekDay6);
+            weekDays[6] = v.findViewById(R.id.weekDay7);
+
+            for (int i = 0; i < DAYS_OF_WEEK.length; i++) {
+                weekDays[i].setText(DAYS_OF_WEEK[i]);
+            }
+        }
     }
 }

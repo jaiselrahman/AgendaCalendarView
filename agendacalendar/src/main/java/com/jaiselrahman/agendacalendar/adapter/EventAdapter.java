@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.collection.LongSparseArray;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SortedList;
 
@@ -17,8 +18,10 @@ import com.jaiselrahman.agendacalendar.util.DateUtils;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
 
@@ -29,6 +32,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private static Calendar cal = Calendar.getInstance();
     private static DateFormat timeFormat = DateFormat.getTimeInstance();
+
+    private LongSparseArray<List<BaseEvent>> eventCache = new LongSparseArray<>();
 
     private OnEventClickListener onEventClickListener;
 
@@ -74,60 +79,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         eventItems.replaceAll(events);
         fillNoEvents();
-
-        eventItems.endBatchedUpdates();
-    }
-
-    public <T extends BaseEvent> void addEvent(T event) {
-        int pos = eventItems.indexOf(new BaseEvent.Empty(event.getTime()));
-        if (pos != SortedList.INVALID_POSITION) {
-            eventItems.removeItemAt(pos);
-        }
-        eventItems.add(event);
-    }
-
-    public void addEvents(List<BaseEvent> events) {
-        if (events.isEmpty()) return;
-
-        if (events.size() == 1) {
-            addEvent(events.get(0));
-        }
-
-        eventItems.beginBatchedUpdates();
-
-        for (BaseEvent event : events) {
-            int pos = eventItems.indexOf(new BaseEvent.Empty(event.getTime()));
-            if (pos != SortedList.INVALID_POSITION) {
-                eventItems.removeItemAt(pos);
-            }
-        }
-
-        eventItems.addAll(events);
-        fillNoEvents();
-
-        eventItems.endBatchedUpdates();
-    }
-
-    public void removeEvent(BaseEvent event) {
-        int pos = eventItems.indexOf(event);
-
-        eventItems.remove(event);
-
-        long dayDiff = pos < 0 || pos >= eventItems.size() ? 0 :
-                DateUtils.dayDiff(eventItems.get(pos).getTimeInMillis(),
-                        eventItems.get(pos - 1).getTimeInMillis());
-
-        if (dayDiff > 1) {
-            eventItems.add(new BaseEvent.Empty(event.getTime()));
-        }
-    }
-
-    public void removeEvents(List<BaseEvent> events) {
-        eventItems.beginBatchedUpdates();
-
-        for (BaseEvent event : events) {
-            removeEvent(event);
-        }
+        eventCache.clear();
 
         eventItems.endBatchedUpdates();
     }
@@ -214,6 +166,45 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             if (eventItems.get(i).compareTo(cal) == 0) return i;
         }
         return -1;
+    }
+
+    public List<BaseEvent> getEventsOn(long time) {
+        long key = getCacheKey(time);
+
+        List<BaseEvent> events = eventCache.get(key);
+
+        if (events != null) {
+            return events;
+        }
+
+        int pos = getPosition(time);
+        if (pos == -1) {
+            eventCache.put(key, Collections.emptyList());
+            return Collections.emptyList();
+        }
+
+        events = new ArrayList<>();
+
+        BaseEvent event = eventItems.get(pos);
+        events.add(event);
+
+        for (int i = pos + 1; i < eventItems.size(); i++) {
+            BaseEvent nextEvent = eventItems.get(i);
+            if (event.compareTo(nextEvent) != 0) {
+                break;
+            } else {
+                events.add(nextEvent);
+                event = nextEvent;
+            }
+        }
+
+        eventCache.put(key, events);
+
+        return events;
+    }
+
+    private long getCacheKey(long time) {
+        return TimeUnit.MILLISECONDS.toDays(time);
     }
 
     public void setOnEventClickListener(OnEventClickListener onEventClickListener) {

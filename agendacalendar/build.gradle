@@ -2,8 +2,9 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 28
+    buildToolsVersion = '29.0.2'
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 17
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -22,9 +23,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 
-    api 'com.github.jaiselrahman:compactcalendarview:3.1.2'
+    implementation 'com.github.kizitonwose:CalendarView:0.2.8'
     implementation 'com.github.edubarr:header-decor:0.2.7'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.50'
 }

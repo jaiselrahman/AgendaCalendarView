@@ -42,21 +42,11 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, event.getTitle(), Toast.LENGTH_SHORT).show();
         });
 
-
-        agendaCalendar.setListener(new AgendaCalendar.CalendarViewListener() {
-            @Override
-            public void onDayClick(Date dateClicked) {
-                agendaCalendar.scrollTo(dateClicked.getTime());
-            }
-
-            @Override
-            public void onMonthScroll(Date firstDayOfNewMonth) {
-
-            }
-        });
+        agendaCalendar.hideCalendar();
 
         CheckedTextView currentMonth = findViewById(R.id.currentMonth);
         currentMonth.setText(Calendar.getInstance().getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()));
+        currentMonth.setChecked(false);
         currentMonth.setOnClickListener(v -> {
             if (currentMonth.isChecked()) {
                 agendaCalendar.hideCalendar();
@@ -66,7 +56,19 @@ public class MainActivity extends AppCompatActivity {
             currentMonth.setChecked(!currentMonth.isChecked());
         });
 
-        agendaCalendar.setHeightAnimDuration(250);
+        agendaCalendar.setListener(new AgendaCalendar.CalenderListener() {
+            @Override
+            public void onDayClick(Date dateClicked) {
+                agendaCalendar.scrollTo(dateClicked.getTime());
+            }
+
+            @Override
+            public void onMonthScroll(Date firstDayOfNewMonth) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(firstDayOfNewMonth);
+                currentMonth.setText(calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()));
+            }
+        });
     }
 
     @Override
