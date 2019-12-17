@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.SortedList;
 import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
+import com.jaiselrahman.agendacalendar.util.EventUtils;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -162,10 +163,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     public int getPosition(long time) {
         cal.setTimeInMillis(time);
-        for (int i = 0; i < getItemCount(); i++) {
-            if (eventItems.get(i).compareTo(cal) == 0) return i;
-        }
-        return -1;
+        return EventUtils.searchEvent(eventItems, cal);
     }
 
     public List<BaseEvent> getEventsOn(long time) {
