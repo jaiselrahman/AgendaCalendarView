@@ -23,6 +23,7 @@ public class MyEventAdapter extends EventAdapter<Event> {
     }
 
     public static class MyEventViewHolder extends EventViewHolder<Event> {
+        private View root;
         private TextView title;
         private TextView description;
         private TextView location;
@@ -30,6 +31,7 @@ public class MyEventAdapter extends EventAdapter<Event> {
 
         MyEventViewHolder(@NonNull View v) {
             super(v);
+            root = v.findViewById(R.id.root);
             title = v.findViewById(R.id.title);
             description = v.findViewById(R.id.description);
             location = v.findViewById(R.id.location);
@@ -40,7 +42,9 @@ public class MyEventAdapter extends EventAdapter<Event> {
         @Override
         public void bind(Event event) {
 
-            this.title.setText(event.getTitle());
+            root.setBackgroundColor(event.getColor());
+
+            title.setText(event.getTitle());
 
             description.setVisibility(TextUtils.isEmpty(event.getDescription()) ? View.GONE : View.VISIBLE);
             description.setText(event.getDescription());
