@@ -15,7 +15,6 @@ import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jaiselrahman.agendacalendar.R;
-import com.jaiselrahman.agendacalendar.adapter.EventAdapter;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
 import com.kizitonwose.calendarview.CalendarView;
@@ -95,7 +94,7 @@ public class AgendaCalendar extends LinearLayout {
         addView(agendaView);
 
 
-        calendarView.setDayBinder(new CDayBinder((EventAdapter) agendaView.getAdapter()));
+        calendarView.setDayBinder(new CDayBinder(agendaView));
         calendarView.setMonthHeaderBinder(new CMonthHeaderBinder());
         calendarView.setMonthHeaderResource(R.layout.calendar_header);
 
@@ -109,8 +108,8 @@ public class AgendaCalendar extends LinearLayout {
         });
     }
 
-    public void setEvents(List<? extends BaseEvent> events) {
-        agendaView.setEvents(events);
+    public <T extends BaseEvent> void setAdapter(EventAdapter<T> eventAdapter) {
+        agendaView.setAdapter(eventAdapter);
         agendaView.scrollTo(System.currentTimeMillis());
     }
 
@@ -126,10 +125,6 @@ public class AgendaCalendar extends LinearLayout {
     public void scrollCalendarTo(long time) {
         LocalDate date = DateTimeUtils.toLocalDate(new java.sql.Date(time));
         calendarView.smoothScrollToMonth(YearMonth.of(date.getYear(), date.getMonth()));
-    }
-
-    public void setOnEventClickListener(EventAdapter.OnEventClickListener onEventClickListener) {
-        agendaView.setOnEventClickListener(onEventClickListener);
     }
 
     public void showCalendar() {
@@ -152,11 +147,11 @@ public class AgendaCalendar extends LinearLayout {
     }
 
     private static class CDayBinder implements DayBinder<DayViewContainer> {
-        private EventAdapter eventAdapter;
+        private AgendaView agendaView;
         private CalenderListener calenderListener;
 
-        CDayBinder(EventAdapter eventAdapter) {
-            this.eventAdapter = eventAdapter;
+        CDayBinder(AgendaView agendaView) {
+            this.agendaView = agendaView;
         }
 
         @Override
@@ -166,9 +161,10 @@ public class AgendaCalendar extends LinearLayout {
         }
 
         @Override
-        public void bind(DayViewContainer container, @NotNull CalendarDay day) {
+        public void bind(@NonNull DayViewContainer container, @NotNull CalendarDay day) {
             long time = TimeUnit.DAYS.toMillis(day.getDate().toEpochDay());
-            List<BaseEvent> events = eventAdapter.getEventsOn(time);
+            //noinspection unchecked
+            List<BaseEvent> events = ((EventAdapter) agendaView.getAdapter()).getEventsOn(time);
 
             int[] eventColors = new int[events.size()];
             for (int i = 0; i < eventColors.length; i++) {

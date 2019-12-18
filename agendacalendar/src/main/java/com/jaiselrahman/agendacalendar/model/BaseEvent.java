@@ -8,29 +8,12 @@ import java.util.Calendar;
 public interface BaseEvent extends Comparable {
 
     @NonNull
-    String getTitle();
-
     Calendar getTime();
-
-    default String getDescription() {
-        return null;
-    }
-
-    default String getLocation() {
-        return null;
-    }
-
-
-    default long getTimeInMillis() {
-        if (getTime() == null) return 0;
-        return getTime().getTimeInMillis();
-    }
 
     default int getColor() {
         return 0;
     }
 
-    @Override
     default int compareTo(Object o) {
         Calendar curr = getTime(), other;
 
@@ -57,31 +40,26 @@ public interface BaseEvent extends Comparable {
             this.time = time;
         }
 
-        @NonNull
-        @Override
         public String getTitle() {
             return "No Events";
         }
 
         @Override
+        @NonNull
         public Calendar getTime() {
             return time;
         }
 
         @Override
-        public final boolean equals(@Nullable Object obj) {
-            if (obj instanceof Empty) {
-                Calendar other = ((Empty) obj).getTime();
-                if (time.get(Calendar.YEAR) == other.get(Calendar.YEAR)
-                        && time.get(Calendar.DAY_OF_YEAR) == other.get(Calendar.DAY_OF_YEAR)) {
-                    return true;
-                }
+        public final boolean equals(@Nullable Object other) {
+            if (other instanceof Empty) {
+                return compareTo(other) == 0;
             }
-            return super.equals(obj);
+            return super.equals(other);
         }
 
         @Override
-        public int hashCode() {
+        final public int hashCode() {
             return 0;
         }
     }

@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.jaiselrahman.agendacalendar.view.AgendaCalendar;
+import com.jaiselrahman.agendacalendarsample.MyEventAdapter;
 import com.jaiselrahman.agendacalendarsample.R;
 import com.jaiselrahman.agendacalendarsample.model.Event;
 
@@ -36,11 +37,14 @@ public class MainActivity extends AppCompatActivity {
 
         agendaCalendar = findViewById(R.id.calendar);
 
-        agendaCalendar.setEvents(events);
+        MyEventAdapter myEventAdapter = new MyEventAdapter();
+        myEventAdapter.setEvents(events);
 
-        agendaCalendar.setOnEventClickListener(event -> {
+        myEventAdapter.setOnEventClickListener(event -> {
             Toast.makeText(this, event.getTitle(), Toast.LENGTH_SHORT).show();
         });
+
+        agendaCalendar.setAdapter(myEventAdapter);
 
         agendaCalendar.hideCalendar();
 

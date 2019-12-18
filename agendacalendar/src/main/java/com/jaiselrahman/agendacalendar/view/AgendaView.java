@@ -9,15 +9,10 @@ import androidx.annotation.RestrictTo;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.jaiselrahman.agendacalendar.adapter.EventAdapter;
-import com.jaiselrahman.agendacalendar.model.BaseEvent;
-
-import java.util.List;
-
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderDecoration;
 
 public class AgendaView extends RecyclerView {
-    private EventAdapter eventAdapter = new EventAdapter();
+    private EventAdapter eventAdapter = null;
     private LinearLayoutManager linearLayoutManager;
 
     public AgendaView(@NonNull Context context) {
@@ -33,30 +28,19 @@ public class AgendaView extends RecyclerView {
 
         if (isInEditMode()) return;
 
-        super.setAdapter(eventAdapter);
-
         linearLayoutManager = new LinearLayoutManager(context);
         super.setLayoutManager(linearLayoutManager);
 
         setItemAnimator(null);
-
-        addItemDecoration(new StickyHeaderDecoration(eventAdapter, false));
-    }
-
-    public void setEvents(List<? extends BaseEvent> events) {
-        //noinspection unchecked
-        eventAdapter.setEvents((List<BaseEvent>) events);
     }
 
     public void scrollTo(long time) {
+        if (eventAdapter == null) return;
+
         int pos = eventAdapter.getPosition(time);
         if (pos >= 0) {
             linearLayoutManager.scrollToPositionWithOffset(pos, 0);
         }
-    }
-
-    public void setOnEventClickListener(EventAdapter.OnEventClickListener onEventClickListener) {
-        eventAdapter.setOnEventClickListener(onEventClickListener);
     }
 
     @Override
@@ -72,6 +56,12 @@ public class AgendaView extends RecyclerView {
     @Override
     @RestrictTo(RestrictTo.Scope.LIBRARY)
     public final void setAdapter(@Nullable Adapter adapter) {
+        if (adapter instanceof EventAdapter) {
+            eventAdapter = (EventAdapter) adapter;
+            super.setAdapter(eventAdapter);
+            addItemDecoration(new StickyHeaderDecoration(eventAdapter.getEventStickyHeader(), false));
+            return;
+        }
         if (isInEditMode()) {
             super.setAdapter(adapter);
             return;

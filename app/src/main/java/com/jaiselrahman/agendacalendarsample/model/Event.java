@@ -20,28 +20,25 @@ public class Event implements BaseEvent {
         this.color = color;
     }
 
-    @Override
     @NonNull
     public String getTitle() {
         return title;
     }
 
-    @Override
     public String getDescription() {
         return description;
     }
 
-    @Override
     public String getLocation() {
         return location;
     }
 
     @Override
+    @NonNull
     public Calendar getTime() {
         return time;
     }
 
-    @Override
     public int getColor() {
         return color;
     }
