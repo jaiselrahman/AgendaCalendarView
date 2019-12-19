@@ -7,6 +7,7 @@
     tools:context=".activity.MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -29,7 +30,6 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:checked="false"
                 android:drawableEnd="@drawable/current_month"
-                android:drawableRight="@drawable/current_month"
                 android:drawablePadding="5dp"
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"

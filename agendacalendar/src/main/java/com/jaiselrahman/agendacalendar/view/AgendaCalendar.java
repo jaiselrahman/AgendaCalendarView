@@ -2,18 +2,17 @@ package com.jaiselrahman.agendacalendar.view;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
@@ -40,7 +39,10 @@ import java.util.concurrent.TimeUnit;
 
 import kotlin.Unit;
 
-public class AgendaCalendar extends LinearLayout {
+public class AgendaCalendar extends CoordinatorLayout {
+    private View toolbar = null;
+    private boolean isCalendarViewVisible = false;
+    private AppBarLayout calendarViewParent;
     private CalendarView calendarView;
     private AgendaView agendaView;
     private CalenderListener calenderListener;
@@ -58,17 +60,21 @@ public class AgendaCalendar extends LinearLayout {
         init(context, attrs, defStyleAttr);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public AgendaCalendar(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init(context, attrs, defStyleAttr);
-    }
-
     private void init(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        setOrientation(VERTICAL);
+        View v = inflate(context, R.layout.agendar_calendar, this);
 
-        calendarView = new CalendarView(context);
-        calendarView.setId(R.id.calendar_view);
+        calendarViewParent = v.findViewById(R.id.calendarViewParent);
+        calendarViewParent.setExpanded(false, false);
+        calendarViewParent.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
+            isCalendarViewVisible = verticalOffset == 0; // Not fully collapsed
+            if (toolbar != null &&
+                    Math.abs(verticalOffset) < appBarLayout.getTotalScrollRange() // Fully collapsed
+            ) {
+                ViewCompat.setElevation(toolbar, 0);
+            }
+        });
+
+        calendarView = v.findViewById(R.id.calendarView);
 
         YearMonth currentYearMonth = YearMonth.now();
         YearMonth firstMonth = currentYearMonth.minusMonths(10);
@@ -86,13 +92,9 @@ public class AgendaCalendar extends LinearLayout {
         calendarView.setDayHeight(dayHeight);
         calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
 
-        calendarView.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dayHeight * 7));
-        addView(calendarView);
+        calendarView.getLayoutParams().height = dayHeight * 7;
 
-        agendaView = new AgendaView(context, attrs, defStyleAttr);
-        agendaView.setId(R.id.agenda_view);
-        addView(agendaView);
-
+        agendaView = v.findViewById(R.id.agendaView);
 
         calendarView.setDayBinder(new CDayBinder(agendaView));
         calendarView.setMonthHeaderBinder(new CMonthHeaderBinder());
@@ -118,6 +120,10 @@ public class AgendaCalendar extends LinearLayout {
         scrollCalendarTo(time);
     }
 
+    public void hideElevationFor(@NonNull AppBarLayout toolbar) {
+        this.toolbar = toolbar;
+    }
+
     public void scrollAgendaViewTo(long time) {
         agendaView.scrollTo(time);
     }
@@ -128,11 +134,15 @@ public class AgendaCalendar extends LinearLayout {
     }
 
     public void showCalendar() {
-        calendarView.setVisibility(VISIBLE);
+        calendarViewParent.setExpanded(true);
     }
 
     public void hideCalendar() {
-        calendarView.setVisibility(GONE);
+        calendarViewParent.setExpanded(false);
+    }
+
+    public boolean isCalendarViewVisible() {
+        return isCalendarViewVisible;
     }
 
     public void setListener(CalenderListener calenderListener) {

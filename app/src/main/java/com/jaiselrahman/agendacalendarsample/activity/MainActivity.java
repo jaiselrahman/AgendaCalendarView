@@ -48,16 +48,17 @@ public class MainActivity extends AppCompatActivity {
 
         agendaCalendar.hideCalendar();
 
+        agendaCalendar.hideElevationFor(findViewById(R.id.appBar));
+
         CheckedTextView currentMonth = findViewById(R.id.currentMonth);
         currentMonth.setText(Calendar.getInstance().getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()));
-        currentMonth.setChecked(false);
         currentMonth.setOnClickListener(v -> {
-            if (currentMonth.isChecked()) {
+            if (agendaCalendar.isCalendarViewVisible()) {
                 agendaCalendar.hideCalendar();
             } else {
                 agendaCalendar.showCalendar();
             }
-            currentMonth.setChecked(!currentMonth.isChecked());
+            currentMonth.setChecked(!agendaCalendar.isCalendarViewVisible());
         });
 
         agendaCalendar.setListener(new AgendaCalendar.CalenderListener() {
