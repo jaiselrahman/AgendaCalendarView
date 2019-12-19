@@ -40,12 +40,15 @@ import java.util.concurrent.TimeUnit;
 import kotlin.Unit;
 
 public class AgendaCalendar extends CoordinatorLayout {
-    private View toolbar = null;
-    private boolean isCalendarViewVisible = false;
-    private AppBarLayout calendarViewParent;
     private CalendarView calendarView;
     private AgendaView agendaView;
+
     private CalenderListener calenderListener;
+
+    private View hideElevationFor = null;
+    private AppBarLayout calendarViewParent;
+
+    private boolean isCalendarViewVisible = false;
 
     public AgendaCalendar(Context context) {
         this(context, null);
@@ -67,39 +70,36 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarViewParent.setExpanded(false, false);
         calendarViewParent.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             isCalendarViewVisible = verticalOffset == 0; // Not fully collapsed
-            if (toolbar != null &&
+            if (hideElevationFor != null &&
                     Math.abs(verticalOffset) < appBarLayout.getTotalScrollRange() // Fully collapsed
             ) {
-                ViewCompat.setElevation(toolbar, 0);
+                ViewCompat.setElevation(hideElevationFor, 0);
             }
         });
 
         calendarView = v.findViewById(R.id.calendarView);
+
+        calendarView.setScrollMode(ScrollMode.PAGED);
+        calendarView.setOrientation(RecyclerView.HORIZONTAL);
+        calendarView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+
+        int dayHeight = getResources().getDimensionPixelSize(R.dimen.calendar_day_height);
+
+        calendarView.setDayHeight(dayHeight);
+        calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
+        calendarView.getLayoutParams().height = dayHeight * 7;
+
+        calendarView.setDayBinder(new CDayBinder(agendaView));
+        calendarView.setDayViewResource(R.layout.calendar_day_layout);
+        calendarView.setMonthHeaderBinder(new CMonthHeaderBinder());
+        calendarView.setMonthHeaderResource(R.layout.calendar_header);
 
         YearMonth currentYearMonth = YearMonth.now();
         YearMonth firstMonth = currentYearMonth.minusMonths(10);
         YearMonth lastMonth = currentYearMonth.plusMonths(10);
         DayOfWeek firstDayOfWeek = WeekFields.of(Locale.getDefault()).getFirstDayOfWeek();
 
-        calendarView.setScrollMode(ScrollMode.PAGED);
-        calendarView.setOrientation(RecyclerView.HORIZONTAL);
-        calendarView.setDayViewResource(R.layout.calendar_day_layout);
         calendarView.setup(firstMonth, lastMonth, firstDayOfWeek);
-
-        int dayHeight = getResources().getDimensionPixelSize(R.dimen.calendar_day_height);
-
-        calendarView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-        calendarView.setDayHeight(dayHeight);
-        calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
-
-        calendarView.getLayoutParams().height = dayHeight * 7;
-
-        agendaView = v.findViewById(R.id.agendaView);
-
-        calendarView.setDayBinder(new CDayBinder(agendaView));
-        calendarView.setMonthHeaderBinder(new CMonthHeaderBinder());
-        calendarView.setMonthHeaderResource(R.layout.calendar_header);
-
         calendarView.scrollToMonth(currentYearMonth);
 
         calendarView.setMonthScrollListener(calendarMonth -> {
@@ -108,6 +108,8 @@ public class AgendaCalendar extends CoordinatorLayout {
             }
             return Unit.INSTANCE;
         });
+
+        agendaView = v.findViewById(R.id.agendaView);
     }
 
     public <T extends BaseEvent> void setAdapter(EventAdapter<T> eventAdapter) {
@@ -118,10 +120,6 @@ public class AgendaCalendar extends CoordinatorLayout {
     public void scrollTo(long time) {
         scrollAgendaViewTo(time);
         scrollCalendarTo(time);
-    }
-
-    public void hideElevationFor(@NonNull AppBarLayout toolbar) {
-        this.toolbar = toolbar;
     }
 
     public void scrollAgendaViewTo(long time) {
@@ -143,6 +141,10 @@ public class AgendaCalendar extends CoordinatorLayout {
 
     public boolean isCalendarViewVisible() {
         return isCalendarViewVisible;
+    }
+
+    public void hideElevationFor(@NonNull AppBarLayout toolbar) {
+        this.hideElevationFor = toolbar;
     }
 
     public void setListener(CalenderListener calenderListener) {
