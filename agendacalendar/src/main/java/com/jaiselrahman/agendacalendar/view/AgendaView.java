@@ -9,6 +9,8 @@ import androidx.annotation.RestrictTo;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.threeten.bp.LocalDate;
+
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderDecoration;
 
 public class AgendaView extends RecyclerView {
@@ -34,10 +36,10 @@ public class AgendaView extends RecyclerView {
         setItemAnimator(null);
     }
 
-    public void scrollTo(long time) {
+    public void scrollTo(LocalDate localDate) {
         if (eventAdapter == null) return;
 
-        int pos = eventAdapter.getPosition(time);
+        int pos = eventAdapter.getPosition(localDate);
         if (pos >= 0) {
             linearLayoutManager.scrollToPositionWithOffset(pos, 0);
         }

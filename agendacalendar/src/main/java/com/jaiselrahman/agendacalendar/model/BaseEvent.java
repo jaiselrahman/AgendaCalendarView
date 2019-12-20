@@ -3,30 +3,42 @@ package com.jaiselrahman.agendacalendar.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.Calendar;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
 
 public interface BaseEvent extends Comparable {
 
     @NonNull
-    Calendar getTime();
+    LocalDateTime getTime();
 
     default int getColor() {
         return 0;
     }
 
     default int compareTo(Object o) {
-        Calendar curr = getTime(), other;
+        if (o == null) return -1;
+        LocalDateTime curr = getTime(), other;
 
-        if (o instanceof Calendar) {
-            other = (Calendar) o;
+        if (o instanceof LocalDate) {
+            LocalDate date = (LocalDate) o;
+            if (curr.getYear() == date.getYear()
+                    && curr.getDayOfYear() == date.getDayOfYear()) {
+                return 0;
+            } else {
+                return curr.compareTo(date.atStartOfDay());
+            }
+        }
+
+        if (o instanceof LocalDateTime) {
+            other = (LocalDateTime) o;
         } else if (o instanceof BaseEvent) {
             other = ((BaseEvent) o).getTime();
         } else {
             throw new ClassCastException("Argument should be instance of Calendar or BaseEvent");
         }
 
-        if (curr.get(Calendar.YEAR) == other.get(Calendar.YEAR)
-                && curr.get(Calendar.DAY_OF_YEAR) == other.get(Calendar.DAY_OF_YEAR)) {
+        if (curr.getYear() == other.getYear()
+                && curr.getDayOfYear() == other.getDayOfYear()) {
             return 0;
         } else {
             return curr.compareTo(other);
@@ -34,9 +46,9 @@ public interface BaseEvent extends Comparable {
     }
 
     final class Empty implements BaseEvent {
-        private Calendar time;
+        private LocalDateTime time;
 
-        public Empty(Calendar time) {
+        public Empty(LocalDateTime time) {
             this.time = time;
         }
 
@@ -46,7 +58,7 @@ public interface BaseEvent extends Comparable {
 
         @Override
         @NonNull
-        public Calendar getTime() {
+        public LocalDateTime getTime() {
             return time;
         }
 

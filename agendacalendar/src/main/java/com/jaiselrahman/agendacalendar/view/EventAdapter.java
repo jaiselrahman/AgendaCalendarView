@@ -7,24 +7,27 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SortedList;
 
 import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
 import com.jaiselrahman.agendacalendar.util.EventCache;
-import com.jaiselrahman.agendacalendar.util.EventUtils;
+
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
+import org.threeten.bp.format.DateTimeFormatterBuilder;
+import org.threeten.bp.format.TextStyle;
+import org.threeten.bp.temporal.ChronoField;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
 
-@SuppressWarnings("WeakerAccess")
-public abstract class EventAdapter<T extends BaseEvent>
+@SuppressWarnings({"WeakerAccess", "unused"})
+public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
         extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     private static final int EVENT = 0;
     private static final int EMPTY_EVENT = 1;
@@ -34,8 +37,8 @@ public abstract class EventAdapter<T extends BaseEvent>
 
                 @Override
                 final public long getHeaderId(int position) {
-                    Calendar cal = eventItems.get(position).getTime();
-                    return cal.get(Calendar.YEAR) * 1000 + cal.get(Calendar.DAY_OF_YEAR);
+                    LocalDateTime date = eventList.get(position).getTime();
+                    return date.getYear() * 1000 + date.getDayOfYear();
                 }
 
                 @Override
@@ -46,50 +49,18 @@ public abstract class EventAdapter<T extends BaseEvent>
 
                 @Override
                 public void onBindHeaderViewHolder(HeaderViewHolder headerViewHolder, int position) {
-                    headerViewHolder.bind(eventItems.get(position));
+                    headerViewHolder.bind(eventList.get(position));
                 }
             };
 
-    private static Calendar cal = Calendar.getInstance();
+    private OnEventClickListener<E> onEventClickListener;
 
-    private OnEventClickListener<T> onEventClickListener;
+    private EventList<E, T> eventList;
 
-    private SortedList<BaseEvent> eventItems = new SortedList<>(BaseEvent.class, new SortedList.Callback<BaseEvent>() {
-        @Override
-        public int compare(BaseEvent o1, BaseEvent o2) {
-            return o1.compareTo(o2);
-        }
-
-        @Override
-        public boolean areContentsTheSame(BaseEvent oldItem, BaseEvent newItem) {
-            return oldItem.equals(newItem);
-        }
-
-        @Override
-        public boolean areItemsTheSame(BaseEvent item1, BaseEvent item2) {
-            return item1.equals(item2);
-        }
-
-        @Override
-        public void onChanged(int position, int count) {
-            notifyItemChanged(position, count);
-        }
-
-        @Override
-        public void onInserted(int position, int count) {
-            notifyItemRangeInserted(position, count);
-        }
-
-        @Override
-        public void onRemoved(int position, int count) {
-            notifyItemRangeRemoved(position, count);
-        }
-
-        @Override
-        public void onMoved(int fromPosition, int toPosition) {
-            notifyItemMoved(fromPosition, toPosition);
-        }
-    });
+    public EventAdapter(EventList<E, T> eventList) {
+        this.eventList = eventList;
+        this.eventList.setAdapter(this);
+    }
 
     private EventCache.Loader eventLoader = time -> {
         int pos = getPosition(time);
@@ -99,11 +70,11 @@ public abstract class EventAdapter<T extends BaseEvent>
 
         List<BaseEvent> events = new ArrayList<>();
 
-        BaseEvent event = eventItems.get(pos);
+        BaseEvent event = eventList.get(pos);
         events.add(event);
 
-        for (int i = pos + 1; i < eventItems.size(); i++) {
-            BaseEvent nextEvent = eventItems.get(i);
+        for (int i = pos + 1; i < eventList.size(); i++) {
+            BaseEvent nextEvent = eventList.get(i);
             if (event.compareTo(nextEvent) != 0) {
                 break;
             } else {
@@ -115,20 +86,12 @@ public abstract class EventAdapter<T extends BaseEvent>
         return events;
     };
 
-    final public void setEvents(List<T> events) {
-        eventItems.beginBatchedUpdates();
-
-        //noinspection unchecked
-        eventItems.replaceAll((List<BaseEvent>) events);
-        fillNoEvents();
-        EventCache.clear();
-
-        eventItems.endBatchedUpdates();
+    final public void setEvents(T events) {
+        eventList.setEvents(events);
     }
 
-    public T getEvent(int position) {
-        //noinspection unchecked
-        return (T) eventItems.get(position);
+    public E getEvent(int position) {
+        return eventList.get(position);
     }
 
     @NonNull
@@ -136,6 +99,7 @@ public abstract class EventAdapter<T extends BaseEvent>
     final public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == EVENT) {
             EventViewHolder holder = createEventViewHolder(parent);
+            //noinspection unchecked
             holder.setOnEventClickListener(onEventClickListener);
             return holder;
         } else {
@@ -144,18 +108,19 @@ public abstract class EventAdapter<T extends BaseEvent>
         }
     }
 
-    public abstract EventViewHolder<T> createEventViewHolder(ViewGroup viewGroup);
+    public abstract EventViewHolder<E> createEventViewHolder(ViewGroup viewGroup);
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        BaseEvent event = eventItems.get(position);
+        BaseEvent event = eventList.get(position);
+        //noinspection unchecked
         holder.bind(event);
         holder.event = event;
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (eventItems.get(position) instanceof BaseEvent.Empty) {
+        if (eventList.get(position) instanceof BaseEvent.Empty) {
             return EMPTY_EVENT;
         }
         return EVENT;
@@ -163,53 +128,24 @@ public abstract class EventAdapter<T extends BaseEvent>
 
     @Override
     public int getItemCount() {
-        return eventItems == null ? 0 : eventItems.size();
+        return eventList.size();
     }
 
-    public int getPosition(long time) {
-        cal.setTimeInMillis(time);
-        return EventUtils.searchEvent(eventItems, cal);
+    public int getPosition(LocalDate localDate) {
+        return eventList.indexOf(localDate);
     }
 
-    public List<T> getEventsOn(long time) {
+    public List<E> getEventsOn(LocalDate localDate) {
         //noinspection unchecked
-        return (List<T>) EventCache.getEvents(time, eventLoader);
+        return (List<E>) EventCache.getEvents(localDate, eventLoader);
     }
 
-    public void setOnEventClickListener(OnEventClickListener<T> onEventClickListener) {
+    public void setOnEventClickListener(OnEventClickListener<E> onEventClickListener) {
         this.onEventClickListener = onEventClickListener;
     }
 
-    private void fillNoEvents() {
-        List<BaseEvent> emptyEvents = new ArrayList<>();
-
-        int toBeAdded = 0, eventSize = eventItems.size();
-        BaseEvent lastChecked = eventItems.get(toBeAdded);
-
-        while (toBeAdded < eventSize) {
-            boolean hasEvent = false;
-
-            for (int j = toBeAdded; j < eventSize; ) {
-                BaseEvent event = eventItems.get(j);
-                long dayDiff = DateUtils.dayDiff(event.getTime().getTimeInMillis(), lastChecked.getTime().getTimeInMillis());
-                if (dayDiff <= 1) {
-                    lastChecked = event;
-                    hasEvent = true;
-                    toBeAdded = ++j;
-                } else {
-                    break;
-                }
-            }
-
-            if (!hasEvent) {
-                Calendar cal = (Calendar) lastChecked.getTime().clone();
-                cal.add(Calendar.DAY_OF_MONTH, 1);
-                lastChecked = new BaseEvent.Empty(cal);
-                emptyEvents.add(lastChecked);
-            }
-        }
-
-        eventItems.addAll(emptyEvents);
+    void setOnEventSetListener(EventList.OnEventSetListener onEventSetListener) {
+        eventList.setOnEventSetListener(onEventSetListener);
     }
 
     StickyHeaderAdapter<EventAdapter.HeaderViewHolder> getEventStickyHeader() {
@@ -218,18 +154,21 @@ public abstract class EventAdapter<T extends BaseEvent>
 
     private static class HeaderViewHolder extends RecyclerView.ViewHolder {
         private TextView day, date;
+        private DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder()
+                .appendText(ChronoField.DAY_OF_WEEK, TextStyle.SHORT)
+                .toFormatter();
 
         HeaderViewHolder(@NonNull View v) {
             super(v);
             day = v.findViewById(R.id.day);
             date = v.findViewById(R.id.date);
+
         }
 
         void bind(BaseEvent event) {
-            cal.setTimeInMillis(event.getTime().getTimeInMillis());
-            date.setText(String.valueOf(cal.get(Calendar.DAY_OF_MONTH)));
-            day.setText(cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()));
-            if (DateUtils.isToday(event.getTime().getTimeInMillis())) {
+            date.setText(String.valueOf(event.getTime().getDayOfMonth()));
+            day.setText(dateFormatter.format(event.getTime()));
+            if (DateUtils.isToday(event.getTime())) {
                 itemView.setBackgroundResource(R.drawable.event_current_item_header);
             }
         }

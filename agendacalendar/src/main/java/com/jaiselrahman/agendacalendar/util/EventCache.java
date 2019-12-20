@@ -5,34 +5,39 @@ import androidx.collection.LongSparseArray;
 
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
+import org.threeten.bp.LocalDate;
+
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class EventCache {
     private static final LongSparseArray<List<BaseEvent>> eventCache = new LongSparseArray<>();
 
     @NonNull
-    public static List<BaseEvent> getEvents(long time, Loader eventLoader) {
-        long key = getCacheKey(time);
+    public static List<BaseEvent> getEvents(LocalDate localDate, Loader eventLoader) {
+        long key = getCacheKey(localDate);
         List<BaseEvent> events = eventCache.get(key);
         if (events == null) {
-            events = eventLoader.getEvents(time);
+            events = eventLoader.getEvents(localDate);
 
         }
         eventCache.put(key, events);
         return events;
     }
 
-    public static void clear() {
+    public static void clear(LocalDate localDate) {
+        eventCache.remove(getCacheKey(localDate));
+    }
+
+    public static void clearAll() {
         eventCache.clear();
     }
 
-    private static long getCacheKey(long time) {
-        return TimeUnit.MILLISECONDS.toDays(time);
+    private static long getCacheKey(LocalDate localDate) {
+        return localDate.toEpochDay();
     }
 
     public interface Loader {
         @NonNull
-        List<BaseEvent> getEvents(long time);
+        List<BaseEvent> getEvents(LocalDate localDate);
     }
 }

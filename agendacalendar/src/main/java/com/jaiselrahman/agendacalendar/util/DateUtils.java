@@ -1,19 +1,18 @@
 package com.jaiselrahman.agendacalendar.util;
 
 import org.threeten.bp.DayOfWeek;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.temporal.WeekFields;
 
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 public class DateUtils {
-    public static boolean isToday(long when) {
-        long today = System.currentTimeMillis();
-        return TimeUnit.MILLISECONDS.toDays(today) == TimeUnit.MILLISECONDS.toDays(when);
-    }
+    private static LocalDate today = LocalDate.now();
 
-    public static long dayDiff(long day1, long day2) {
-        return TimeUnit.MILLISECONDS.toDays(day1) - TimeUnit.MILLISECONDS.toDays(day2);
+    public static boolean isToday(LocalDateTime localDateTime) {
+        return today.getYear() == localDateTime.getYear()
+                && today.getDayOfYear() == localDateTime.getDayOfYear();
     }
 
     public static String[] getDaysOfWeek() {

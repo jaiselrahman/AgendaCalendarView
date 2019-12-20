@@ -26,16 +26,13 @@ import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder;
 import com.kizitonwose.calendarview.ui.ViewContainer;
 
 import org.jetbrains.annotations.NotNull;
-import org.threeten.bp.DateTimeUtils;
 import org.threeten.bp.DayOfWeek;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.YearMonth;
 import org.threeten.bp.temporal.WeekFields;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import kotlin.Unit;
 
@@ -49,6 +46,19 @@ public class AgendaCalendar extends CoordinatorLayout {
     private AppBarLayout calendarViewParent;
 
     private boolean isCalendarViewVisible = false;
+
+    private boolean onInit = true;
+
+    private EventList.OnEventSetListener onEventSetListener = new EventList.OnEventSetListener() {
+        @Override
+        public void onEventSet() {
+            calendarView.notifyMonthChanged(YearMonth.now());
+            if (onInit) {
+                agendaView.scrollTo(LocalDate.now());
+                onInit = false;
+            }
+        }
+    };
 
     public AgendaCalendar(Context context) {
         this(context, null);
@@ -89,6 +99,8 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
         calendarView.getLayoutParams().height = dayHeight * 7;
 
+        agendaView = v.findViewById(R.id.agendaView);
+
         calendarView.setDayBinder(new CDayBinder(agendaView));
         calendarView.setDayViewResource(R.layout.calendar_day_layout);
         calendarView.setMonthHeaderBinder(new CMonthHeaderBinder());
@@ -104,30 +116,27 @@ public class AgendaCalendar extends CoordinatorLayout {
 
         calendarView.setMonthScrollListener(calendarMonth -> {
             if (calenderListener != null) {
-                calenderListener.onMonthScroll(DateTimeUtils.toSqlDate(calendarMonth.getYearMonth().atDay(1)));
+                calenderListener.onMonthScroll(calendarMonth.getYearMonth());
             }
             return Unit.INSTANCE;
         });
-
-        agendaView = v.findViewById(R.id.agendaView);
     }
 
-    public <T extends BaseEvent> void setAdapter(EventAdapter<T> eventAdapter) {
+    public <E extends BaseEvent, T extends List<E>> void setAdapter(EventAdapter<E, T> eventAdapter) {
+        eventAdapter.setOnEventSetListener(onEventSetListener);
         agendaView.setAdapter(eventAdapter);
-        agendaView.scrollTo(System.currentTimeMillis());
     }
 
-    public void scrollTo(long time) {
-        scrollAgendaViewTo(time);
-        scrollCalendarTo(time);
+    public void scrollTo(LocalDate date) {
+        scrollAgendaViewTo(date);
+        scrollCalendarTo(date);
     }
 
-    public void scrollAgendaViewTo(long time) {
-        agendaView.scrollTo(time);
+    public void scrollAgendaViewTo(LocalDate date) {
+        agendaView.scrollTo(date);
     }
 
-    public void scrollCalendarTo(long time) {
-        LocalDate date = DateTimeUtils.toLocalDate(new java.sql.Date(time));
+    public void scrollCalendarTo(LocalDate date) {
         calendarView.smoothScrollToMonth(YearMonth.of(date.getYear(), date.getMonth()));
     }
 
@@ -153,9 +162,9 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     public interface CalenderListener {
-        void onDayClick(Date dateClicked);
+        void onDayClick(LocalDate date);
 
-        void onMonthScroll(Date firstDayOfNewMonth);
+        void onMonthScroll(YearMonth yearMonth);
     }
 
     private static class CDayBinder implements DayBinder<DayViewContainer> {
@@ -174,9 +183,8 @@ public class AgendaCalendar extends CoordinatorLayout {
 
         @Override
         public void bind(@NonNull DayViewContainer container, @NotNull CalendarDay day) {
-            long time = TimeUnit.DAYS.toMillis(day.getDate().toEpochDay());
             //noinspection unchecked
-            List<BaseEvent> events = ((EventAdapter) agendaView.getAdapter()).getEventsOn(time);
+            List<BaseEvent> events = ((EventAdapter) agendaView.getAdapter()).getEventsOn(day.getDate());
 
             int[] eventColors = new int[events.size()];
             for (int i = 0; i < eventColors.length; i++) {
@@ -200,7 +208,7 @@ public class AgendaCalendar extends CoordinatorLayout {
             textView = view.findViewById(R.id.calendarDayText);
             indicator = view.findViewById(R.id.eventIndicator);
 
-            view.setOnClickListener(v -> calenderListener.onDayClick(DateTimeUtils.toSqlDate(currentDay.getDate())));
+            view.setOnClickListener(v -> calenderListener.onDayClick(currentDay.getDate()));
         }
 
         void bind(CalendarDay calendarDay, int[] eventColors) {

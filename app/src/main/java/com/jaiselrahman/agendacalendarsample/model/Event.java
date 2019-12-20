@@ -5,14 +5,14 @@ import androidx.annotation.Nullable;
 
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
-import java.util.Calendar;
+import org.threeten.bp.LocalDateTime;
 
 public class Event implements BaseEvent {
     private String title, description, location;
-    private Calendar time;
+    private LocalDateTime time;
     private int color;
 
-    public Event(@NonNull String title, String description, String location, Calendar time, int color) {
+    public Event(@NonNull String title, String description, String location, LocalDateTime time, int color) {
         this.title = title;
         this.description = description;
         this.location = location;
@@ -35,7 +35,7 @@ public class Event implements BaseEvent {
 
     @Override
     @NonNull
-    public Calendar getTime() {
+    public LocalDateTime getTime() {
         return time;
     }
 
