@@ -62,19 +62,16 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, event.getTitle(), Toast.LENGTH_SHORT).show();
         });
 
-        agendaCalendar.hideCalendar();
-
         agendaCalendar.hideElevationFor(findViewById(R.id.appBar));
 
         CheckedTextView currentMonth = findViewById(R.id.currentMonth);
         currentMonth.setText(dateFormatter.format(MonthDay.now().getMonth()));
         currentMonth.setOnClickListener(v -> {
-            if (agendaCalendar.isCalendarViewVisible()) {
+            if (currentMonth.isChecked()) {
                 agendaCalendar.hideCalendar();
             } else {
                 agendaCalendar.showCalendar();
             }
-            currentMonth.setChecked(!agendaCalendar.isCalendarViewVisible());
         });
 
         agendaCalendar.setListener(new AgendaCalendar.CalenderListener() {
@@ -93,6 +90,11 @@ public class MainActivity extends AppCompatActivity {
                     agendaCalendar.scrollAgendaViewTo(yearMonth.atDay(1));
                 }
                 lastMonth = yearMonth.getMonth();
+            }
+
+            @Override
+            public void onCalendarVisibilityChange(boolean isVisible) {
+                currentMonth.setChecked(isVisible);
             }
         });
     }

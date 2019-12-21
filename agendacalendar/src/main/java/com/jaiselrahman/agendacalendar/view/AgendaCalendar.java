@@ -45,8 +45,6 @@ public class AgendaCalendar extends CoordinatorLayout {
     private View hideElevationFor = null;
     private AppBarLayout calendarViewParent;
 
-    private boolean isCalendarViewVisible = false;
-
     private boolean onInit = true;
 
     private EventList.OnEventSetListener onEventSetListener = new EventList.OnEventSetListener() {
@@ -79,11 +77,24 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarViewParent = v.findViewById(R.id.calendarViewParent);
         calendarViewParent.setExpanded(false, false);
         calendarViewParent.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
-            isCalendarViewVisible = verticalOffset == 0; // Not fully collapsed
-            if (hideElevationFor != null &&
-                    Math.abs(verticalOffset) < appBarLayout.getTotalScrollRange() // Fully collapsed
-            ) {
-                ViewCompat.setElevation(hideElevationFor, 0);
+            verticalOffset = Math.abs(verticalOffset);
+
+            //Fully visible
+            if (verticalOffset == 0 && calenderListener != null) {
+                calenderListener.onCalendarVisibilityChange(true);
+            }
+
+            //Partialy visible
+            if (verticalOffset < appBarLayout.getTotalScrollRange()) {
+                if (hideElevationFor != null)
+                    ViewCompat.setElevation(hideElevationFor, 0);
+            }
+
+            //Fully collapsed
+            if (verticalOffset == appBarLayout.getTotalScrollRange()) {
+                if (calenderListener != null) {
+                    calenderListener.onCalendarVisibilityChange(false);
+                }
             }
         });
 
@@ -148,10 +159,6 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarViewParent.setExpanded(false);
     }
 
-    public boolean isCalendarViewVisible() {
-        return isCalendarViewVisible;
-    }
-
     public void hideElevationFor(@NonNull AppBarLayout toolbar) {
         this.hideElevationFor = toolbar;
     }
@@ -165,6 +172,9 @@ public class AgendaCalendar extends CoordinatorLayout {
         void onDayClick(LocalDate date);
 
         void onMonthScroll(YearMonth yearMonth);
+
+        default void onCalendarVisibilityChange(boolean isVisible) {
+        }
     }
 
     private static class CDayBinder implements DayBinder<DayViewContainer> {
