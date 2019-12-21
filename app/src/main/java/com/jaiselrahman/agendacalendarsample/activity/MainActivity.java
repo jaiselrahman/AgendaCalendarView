@@ -121,7 +121,10 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<Event> callback) {
-                callback.onResult(events.subList(0, params.pageSize), 0);
+                int toPosition = params.pageSize;
+                if (toPosition > events.size())
+                    toPosition = events.size();
+                callback.onResult(events.subList(0, toPosition), 0);
             }
 
             @Override
