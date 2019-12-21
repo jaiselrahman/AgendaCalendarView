@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.ChangeBounds;
+import androidx.transition.TransitionManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.jaiselrahman.agendacalendar.R;
@@ -45,7 +47,10 @@ public class AgendaCalendar extends CoordinatorLayout {
     private View hideElevationFor = null;
     private AppBarLayout calendarViewParent;
 
+    private ChangeBounds changeBounds = new ChangeBounds();
+
     private boolean onInit = true;
+    private int currentRowCount = -1;
 
     private EventList.OnEventSetListener onEventSetListener = new EventList.OnEventSetListener() {
         @Override
@@ -104,11 +109,8 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarView.setOrientation(RecyclerView.HORIZONTAL);
         calendarView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
 
-        int dayHeight = getResources().getDimensionPixelSize(R.dimen.calendar_day_height);
-
-        calendarView.setDayHeight(dayHeight);
+        calendarView.setDayHeight(getResources().getDimensionPixelSize(R.dimen.calendar_day_height));
         calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
-        calendarView.getLayoutParams().height = dayHeight * 7;
 
         agendaView = v.findViewById(R.id.agendaView);
 
@@ -126,6 +128,11 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarView.scrollToMonth(currentYearMonth);
 
         calendarView.setMonthScrollListener(calendarMonth -> {
+            if (currentRowCount != -1 && currentRowCount != calendarMonth.getWeekDays().size()) {
+                TransitionManager.beginDelayedTransition(this, changeBounds);
+            }
+            currentRowCount = calendarMonth.getWeekDays().size();
+
             if (calenderListener != null) {
                 calenderListener.onMonthScroll(calendarMonth.getYearMonth());
             }
