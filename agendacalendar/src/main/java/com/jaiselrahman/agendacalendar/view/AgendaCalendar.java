@@ -85,7 +85,7 @@ public class AgendaCalendar extends CoordinatorLayout {
                 calenderListener.onCalendarVisibilityChange(true);
             }
 
-            //Partialy visible
+            //Partially visible
             if (verticalOffset < appBarLayout.getTotalScrollRange()) {
                 if (hideElevationFor != null)
                     ViewCompat.setElevation(hideElevationFor, 0);
