@@ -9,47 +9,54 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:gravity="center" />
+        android:gravity="top|center_horizontal"
+        android:paddingTop="5dp" />
 
     <TextView
         android:id="@+id/weekDay2"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:gravity="center" />
+        android:gravity="top|center_horizontal"
+        android:paddingTop="5dp" />
 
     <TextView
         android:id="@+id/weekDay3"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:gravity="center" />
+        android:gravity="top|center_horizontal"
+        android:paddingTop="5dp" />
 
     <TextView
         android:id="@+id/weekDay4"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:gravity="center" />
+        android:gravity="top|center_horizontal"
+        android:paddingTop="5dp" />
 
     <TextView
         android:id="@+id/weekDay5"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:gravity="center" />
+        android:gravity="top|center_horizontal"
+        android:paddingTop="5dp" />
 
     <TextView
         android:id="@+id/weekDay6"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:gravity="center" />
+        android:gravity="top|center_horizontal"
+        android:paddingTop="5dp" />
 
     <TextView
         android:id="@+id/weekDay7"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:gravity="center" />
+        android:gravity="top|center_horizontal"
+        android:paddingTop="5dp" />
 </LinearLayout>

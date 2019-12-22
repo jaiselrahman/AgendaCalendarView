@@ -47,6 +47,7 @@ public class EventIndicatorView extends View {
     }
 
     private void drawEvents(Canvas canvas) {
+        if (eventColors == null) return;
         switch (eventColors.length) {
             case 0:
                 return;

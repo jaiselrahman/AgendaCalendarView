@@ -2,8 +2,10 @@ package com.jaiselrahman.agendacalendar.view;
 
 import android.animation.LayoutTransition;
 import android.content.Context;
-import android.graphics.Color;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
@@ -21,6 +23,8 @@ import com.kizitonwose.calendarview.CalendarView;
 import com.kizitonwose.calendarview.model.CalendarDay;
 import com.kizitonwose.calendarview.model.CalendarMonth;
 import com.kizitonwose.calendarview.model.DayOwner;
+import com.kizitonwose.calendarview.model.InDateStyle;
+import com.kizitonwose.calendarview.model.OutDateStyle;
 import com.kizitonwose.calendarview.model.ScrollMode;
 import com.kizitonwose.calendarview.ui.DayBinder;
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder;
@@ -38,6 +42,8 @@ import java.util.Locale;
 import kotlin.Unit;
 
 public class AgendaCalendar extends CoordinatorLayout {
+    private static final String[] DAYS_OF_WEEK = DateUtils.getDaysOfWeek();
+
     private CalendarView calendarView;
     private AgendaView agendaView;
 
@@ -47,6 +53,11 @@ public class AgendaCalendar extends CoordinatorLayout {
     private AppBarLayout calendarViewParent;
 
     private boolean onInit = true;
+
+    int calendarDateColor;
+    float calendarDateFontSize;
+    boolean calendarShowAdjacentMonthDate;
+    int calendarAdjacentMonthDateColor;
 
     private EventList.OnEventSetListener onEventSetListener = new EventList.OnEventSetListener() {
         @Override
@@ -75,8 +86,22 @@ public class AgendaCalendar extends CoordinatorLayout {
     private void init(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         View v = inflate(context, R.layout.agendar_calendar, this);
 
+        Resources res = getResources();
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.AgendaCalendar, defStyleAttr, 0);
+
+        int calendarBackgroundColor = a.getColor(R.styleable.AgendaCalendar_calendarBackground, res.getColor(R.color.colorPrimary));
+        calendarDateColor = a.getColor(R.styleable.AgendaCalendar_calendarDateColor, res.getColor(android.R.color.primary_text_dark));
+        calendarDateFontSize = a.getDimensionPixelOffset(R.styleable.AgendaCalendar_calendarDateFontSize,
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, res.getDisplayMetrics()));
+        calendarShowAdjacentMonthDate = a.getBoolean(R.styleable.AgendaCalendar_calendarShowAdjacentMonthDate, false);
+        calendarAdjacentMonthDateColor = a.getColor(R.styleable.AgendaCalendar_calendarAdjacentMonthDateColor, res.getColor(android.R.color.secondary_text_dark));
+
+        a.recycle();
+
         calendarViewParent = v.findViewById(R.id.calendarViewParent);
         calendarViewParent.setExpanded(false, false);
+        calendarViewParent.setBackgroundColor(calendarBackgroundColor);
         calendarViewParent.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             verticalOffset = Math.abs(verticalOffset);
 
@@ -103,12 +128,19 @@ public class AgendaCalendar extends CoordinatorLayout {
 
         calendarView.setScrollMode(ScrollMode.PAGED);
         calendarView.setOrientation(RecyclerView.HORIZONTAL);
-        calendarView.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
 
         calendarView.setDayHeight(getResources().getDimensionPixelSize(R.dimen.calendar_day_height));
         calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
 
         agendaView = v.findViewById(R.id.agendaView);
+
+        if (calendarShowAdjacentMonthDate) {
+            calendarView.setInDateStyle(InDateStyle.ALL_MONTHS);
+            calendarView.setOutDateStyle(OutDateStyle.END_OF_ROW);
+        } else {
+            calendarView.setInDateStyle(InDateStyle.ALL_MONTHS);
+            calendarView.setOutDateStyle(OutDateStyle.NONE);
+        }
 
         calendarView.setDayBinder(new CDayBinder(agendaView));
         calendarView.setDayViewResource(R.layout.calendar_day_layout);
@@ -179,7 +211,7 @@ public class AgendaCalendar extends CoordinatorLayout {
         }
     }
 
-    private static class CDayBinder implements DayBinder<DayViewContainer> {
+    private class CDayBinder implements DayBinder<DayViewContainer> {
         private AgendaView agendaView;
         private CalenderListener calenderListener;
 
@@ -210,7 +242,7 @@ public class AgendaCalendar extends CoordinatorLayout {
         }
     }
 
-    private static class DayViewContainer extends ViewContainer {
+    private class DayViewContainer extends ViewContainer {
         private CalendarDay currentDay;
         private TextView textView;
         private EventIndicatorView indicator;
@@ -220,6 +252,8 @@ public class AgendaCalendar extends CoordinatorLayout {
             textView = view.findViewById(R.id.calendarDayText);
             indicator = view.findViewById(R.id.eventIndicator);
 
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, calendarDateFontSize);
+
             view.setOnClickListener(v -> calenderListener.onDayClick(currentDay.getDate()));
         }
 
@@ -227,17 +261,24 @@ public class AgendaCalendar extends CoordinatorLayout {
             currentDay = calendarDay;
 
             textView.setText(String.valueOf(calendarDay.getDate().getDayOfMonth()));
-            if (calendarDay.getOwner() == DayOwner.THIS_MONTH) {
-                textView.setTextColor(Color.BLACK);
-            } else {
-                textView.setTextColor(Color.GRAY);
-            }
 
-            indicator.setEventColors(eventColors);
+            if (calendarDay.getOwner() == DayOwner.THIS_MONTH) {
+                textView.setVisibility(View.VISIBLE);
+                textView.setTextColor(calendarDateColor);
+                indicator.setEventColors(eventColors);
+            } else {
+                if (calendarShowAdjacentMonthDate) {
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setTextColor(calendarAdjacentMonthDateColor);
+                } else {
+                    textView.setVisibility(View.INVISIBLE);
+                }
+                indicator.setEventColors(null);
+            }
         }
     }
 
-    private static class CMonthHeaderBinder implements MonthHeaderFooterBinder<MonthHeaderContainer> {
+    private class CMonthHeaderBinder implements MonthHeaderFooterBinder<MonthHeaderContainer> {
         @Override
         public void bind(@NotNull MonthHeaderContainer monthHeaderContainer, @NotNull CalendarMonth calendarMonth) {
         }
@@ -249,8 +290,7 @@ public class AgendaCalendar extends CoordinatorLayout {
         }
     }
 
-    private static class MonthHeaderContainer extends ViewContainer {
-        private static final String[] DAYS_OF_WEEK = DateUtils.getDaysOfWeek();
+    private class MonthHeaderContainer extends ViewContainer {
 
         MonthHeaderContainer(View v) {
             super(v);
@@ -266,6 +306,8 @@ public class AgendaCalendar extends CoordinatorLayout {
 
             for (int i = 0; i < DAYS_OF_WEEK.length; i++) {
                 weekDays[i].setText(DAYS_OF_WEEK[i]);
+                weekDays[i].setTextSize(TypedValue.COMPLEX_UNIT_PX, calendarDateFontSize);
+                weekDays[i].setTextColor(calendarDateColor);
             }
         }
     }
