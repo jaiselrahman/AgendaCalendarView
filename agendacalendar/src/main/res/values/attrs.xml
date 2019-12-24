@@ -2,8 +2,16 @@
 <resources>
     <declare-styleable name="AgendaCalendar">
         <attr name="calendarBackground" format="color" />
+
         <attr name="calendarDateColor" format="color" />
         <attr name="calendarDateFontSize" format="dimension" />
+
+        <attr name="calendarCurrentDayColor" format="color" />
+        <attr name="calendarCurrentDayBackground" format="color|reference" />
+
+        <attr name="calendarSelectedDayColor" format="color" />
+        <attr name="calendarSelectedDayBackground" format="color|reference" />
+
         <attr name="calendarShowAdjacentMonthDate" format="boolean" />
         <attr name="calendarAdjacentMonthDateColor" format="color" />
     </declare-styleable>

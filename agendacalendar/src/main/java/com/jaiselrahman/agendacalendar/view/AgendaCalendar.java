@@ -44,6 +44,9 @@ import kotlin.Unit;
 public class AgendaCalendar extends CoordinatorLayout {
     private static final String[] DAYS_OF_WEEK = DateUtils.getDaysOfWeek();
 
+    private LocalDate today = LocalDate.now();
+    private LocalDate selectedDay = null;
+
     private CalendarView calendarView;
     private AgendaView agendaView;
 
@@ -56,6 +59,13 @@ public class AgendaCalendar extends CoordinatorLayout {
 
     int calendarDateColor;
     float calendarDateFontSize;
+
+    int calendarCurrentDayColor;
+    int calendarCurrentDayBackgroundRes;
+
+    int calendarSelectedDayColor;
+    int calendarSelectedDayBackgroundRes;
+
     boolean calendarShowAdjacentMonthDate;
     int calendarAdjacentMonthDateColor;
 
@@ -94,6 +104,13 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarDateColor = a.getColor(R.styleable.AgendaCalendar_calendarDateColor, res.getColor(android.R.color.primary_text_dark));
         calendarDateFontSize = a.getDimensionPixelOffset(R.styleable.AgendaCalendar_calendarDateFontSize,
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, res.getDisplayMetrics()));
+
+        calendarCurrentDayColor = a.getColor(R.styleable.AgendaCalendar_calendarCurrentDayColor, res.getColor(android.R.color.white));
+        calendarCurrentDayBackgroundRes = a.getResourceId(R.styleable.AgendaCalendar_calendarCurrentDayBackground, R.drawable.current_day);
+
+        calendarSelectedDayColor = a.getColor(R.styleable.AgendaCalendar_calendarSelectedDayColor, res.getColor(android.R.color.white));
+        calendarSelectedDayBackgroundRes = a.getResourceId(R.styleable.AgendaCalendar_calendarSelectedDayBackground, R.drawable.selected_day);
+
         calendarShowAdjacentMonthDate = a.getBoolean(R.styleable.AgendaCalendar_calendarShowAdjacentMonthDate, false);
         calendarAdjacentMonthDateColor = a.getColor(R.styleable.AgendaCalendar_calendarAdjacentMonthDateColor, res.getColor(android.R.color.secondary_text_dark));
 
@@ -155,10 +172,17 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarView.setup(firstMonth, lastMonth, firstDayOfWeek);
         calendarView.scrollToMonth(currentYearMonth);
 
+        calendarView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            }
+        });
+
         calendarView.setMonthScrollListener(calendarMonth -> {
             if (calenderListener != null) {
                 calenderListener.onMonthScroll(calendarMonth.getYearMonth());
             }
+            setSelectedDate(calendarMonth.getYearMonth().atDay(1));
             return Unit.INSTANCE;
         });
 
@@ -211,6 +235,13 @@ public class AgendaCalendar extends CoordinatorLayout {
         }
     }
 
+    private void setSelectedDate(LocalDate date) {
+        if (selectedDay != null)
+            calendarView.notifyDateChanged(selectedDay);
+        selectedDay = date;
+        calendarView.notifyDateChanged(selectedDay);
+    }
+
     private class CDayBinder implements DayBinder<DayViewContainer> {
         private AgendaView agendaView;
         private CalenderListener calenderListener;
@@ -243,18 +274,23 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     private class DayViewContainer extends ViewContainer {
+        private View view;
         private CalendarDay currentDay;
         private TextView textView;
         private EventIndicatorView indicator;
 
         DayViewContainer(View view, CalenderListener calenderListener) {
             super(view);
+            this.view = view;
             textView = view.findViewById(R.id.calendarDayText);
             indicator = view.findViewById(R.id.eventIndicator);
 
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, calendarDateFontSize);
 
-            view.setOnClickListener(v -> calenderListener.onDayClick(currentDay.getDate()));
+            view.setOnClickListener(v -> {
+                calenderListener.onDayClick(currentDay.getDate());
+                setSelectedDate(currentDay.getDate());
+            });
         }
 
         void bind(CalendarDay calendarDay, int[] eventColors) {
@@ -274,6 +310,16 @@ public class AgendaCalendar extends CoordinatorLayout {
                     textView.setVisibility(View.INVISIBLE);
                 }
                 indicator.setEventColors(null);
+            }
+
+            if (calendarDay.getDate().equals(today)) {
+                textView.setTextColor(calendarCurrentDayColor);
+                textView.setBackgroundResource(calendarCurrentDayBackgroundRes);
+            } else if (calendarDay.getDate().equals(selectedDay)) {
+                textView.setTextColor(calendarSelectedDayColor);
+                textView.setBackgroundResource(calendarSelectedDayBackgroundRes);
+            } else {
+                textView.setBackgroundResource(0);
             }
         }
     }
