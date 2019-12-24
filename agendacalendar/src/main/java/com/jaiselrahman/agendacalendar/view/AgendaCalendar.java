@@ -1,6 +1,5 @@
 package com.jaiselrahman.agendacalendar.view;
 
-import android.animation.LayoutTransition;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -14,6 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.ChangeBounds;
+import androidx.transition.TransitionManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.jaiselrahman.agendacalendar.R;
@@ -55,7 +56,10 @@ public class AgendaCalendar extends CoordinatorLayout {
     private View hideElevationFor = null;
     private AppBarLayout calendarViewParent;
 
+    private ChangeBounds changeBounds = new ChangeBounds();
+
     private boolean onInit = true;
+    private int currentRowCount = -1;
 
     int calendarDateColor;
     float calendarDateFontSize;
@@ -179,16 +183,17 @@ public class AgendaCalendar extends CoordinatorLayout {
         });
 
         calendarView.setMonthScrollListener(calendarMonth -> {
+            if (currentRowCount != -1 && currentRowCount != calendarMonth.getWeekDays().size()) {
+                TransitionManager.beginDelayedTransition(this, changeBounds);
+            }
+            currentRowCount = calendarMonth.getWeekDays().size();
+
             if (calenderListener != null) {
                 calenderListener.onMonthScroll(calendarMonth.getYearMonth());
             }
             setSelectedDate(calendarMonth.getYearMonth().atDay(1));
             return Unit.INSTANCE;
         });
-
-        LayoutTransition layoutTransition = new LayoutTransition();
-        layoutTransition.enableTransitionType(LayoutTransition.CHANGING);
-        setLayoutTransition(layoutTransition);
     }
 
     public <E extends BaseEvent, T extends List<E>> void setAdapter(EventAdapter<E, T> eventAdapter) {
