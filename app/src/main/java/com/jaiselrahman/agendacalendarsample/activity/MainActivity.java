@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        agendaCalendar.setListener(new AgendaCalendar.CalenderListener() {
+        agendaCalendar.setListener(new AgendaCalendar.CalendarListener() {
 
             @Override
             public void onDayClick(LocalDate date) {

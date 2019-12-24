@@ -51,7 +51,7 @@ public class AgendaCalendar extends CoordinatorLayout {
     private CalendarView calendarView;
     private AgendaView agendaView;
 
-    private CalenderListener calenderListener;
+    private CalendarListener calendarListener;
 
     private View hideElevationFor = null;
     private AppBarLayout calendarViewParent;
@@ -127,8 +127,8 @@ public class AgendaCalendar extends CoordinatorLayout {
             verticalOffset = Math.abs(verticalOffset);
 
             //Fully visible
-            if (verticalOffset == 0 && calenderListener != null) {
-                calenderListener.onCalendarVisibilityChange(true);
+            if (verticalOffset == 0 && calendarListener != null) {
+                calendarListener.onCalendarVisibilityChange(true);
             }
 
             //Partially visible
@@ -139,8 +139,8 @@ public class AgendaCalendar extends CoordinatorLayout {
 
             //Fully collapsed
             if (verticalOffset == appBarLayout.getTotalScrollRange()) {
-                if (calenderListener != null) {
-                    calenderListener.onCalendarVisibilityChange(false);
+                if (calendarListener != null) {
+                    calendarListener.onCalendarVisibilityChange(false);
                 }
             }
         });
@@ -182,8 +182,8 @@ public class AgendaCalendar extends CoordinatorLayout {
             }
             currentRowCount = calendarMonth.getWeekDays().size();
 
-            if (calenderListener != null) {
-                calenderListener.onMonthScroll(calendarMonth.getYearMonth());
+            if (calendarListener != null) {
+                calendarListener.onMonthScroll(calendarMonth.getYearMonth());
             }
 
             LocalDate date = calendarMonth.getYearMonth().atDay(1);
@@ -232,12 +232,12 @@ public class AgendaCalendar extends CoordinatorLayout {
         this.hideElevationFor = toolbar;
     }
 
-    public void setListener(CalenderListener calenderListener) {
-        this.calenderListener = calenderListener;
-        ((CDayBinder) calendarView.getDayBinder()).setCalenderListener(calenderListener);
+    public void setListener(CalendarListener calendarListener) {
+        this.calendarListener = calendarListener;
+        ((CDayBinder) calendarView.getDayBinder()).setCalendarListener(calendarListener);
     }
 
-    public interface CalenderListener {
+    public interface CalendarListener {
         void onDayClick(LocalDate date);
 
         void onMonthScroll(YearMonth yearMonth);
@@ -262,7 +262,7 @@ public class AgendaCalendar extends CoordinatorLayout {
 
     private class CDayBinder implements DayBinder<DayViewContainer> {
         private AgendaView agendaView;
-        private CalenderListener calenderListener;
+        private CalendarListener calendarListener;
 
         CDayBinder(AgendaView agendaView) {
             this.agendaView = agendaView;
@@ -271,7 +271,7 @@ public class AgendaCalendar extends CoordinatorLayout {
         @Override
         @NonNull
         public DayViewContainer create(@NonNull View view) {
-            return new DayViewContainer(view, calenderListener);
+            return new DayViewContainer(view, calendarListener);
         }
 
         @Override
@@ -286,8 +286,8 @@ public class AgendaCalendar extends CoordinatorLayout {
             container.bind(day, eventColors);
         }
 
-        void setCalenderListener(CalenderListener calenderListener) {
-            this.calenderListener = calenderListener;
+        void setCalendarListener(CalendarListener calendarListener) {
+            this.calendarListener = calendarListener;
         }
     }
 
@@ -296,7 +296,7 @@ public class AgendaCalendar extends CoordinatorLayout {
         private TextView textView;
         private EventIndicatorView indicator;
 
-        DayViewContainer(View view, CalenderListener calenderListener) {
+        DayViewContainer(View view, CalendarListener calendarListener) {
             super(view);
             textView = view.findViewById(R.id.calendarDayText);
             indicator = view.findViewById(R.id.eventIndicator);
@@ -306,7 +306,7 @@ public class AgendaCalendar extends CoordinatorLayout {
             view.setOnClickListener(v -> {
                 setSelectedDate(currentDay.getDate());
                 scrollAgendaViewTo(currentDay.getDate());
-                calenderListener.onDayClick(currentDay.getDate());
+                calendarListener.onDayClick(currentDay.getDate());
             });
         }
 
