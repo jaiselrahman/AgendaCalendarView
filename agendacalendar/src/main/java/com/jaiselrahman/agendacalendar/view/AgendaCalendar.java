@@ -176,12 +176,6 @@ public class AgendaCalendar extends CoordinatorLayout {
         calendarView.setup(firstMonth, lastMonth, firstDayOfWeek);
         calendarView.scrollToMonth(currentYearMonth);
 
-        calendarView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-            }
-        });
-
         calendarView.setMonthScrollListener(calendarMonth -> {
             if (currentRowCount != -1 && currentRowCount != calendarMonth.getWeekDays().size()) {
                 TransitionManager.beginDelayedTransition(this, changeBounds);
@@ -191,7 +185,17 @@ public class AgendaCalendar extends CoordinatorLayout {
             if (calenderListener != null) {
                 calenderListener.onMonthScroll(calendarMonth.getYearMonth());
             }
-            setSelectedDate(calendarMonth.getYearMonth().atDay(1));
+
+            LocalDate date = calendarMonth.getYearMonth().atDay(1);
+            if (today.equals(selectedDay)
+                    && date.getYear() == today.getYear()
+                    && date.getMonthValue() == today.getMonthValue()) {
+                date = today;
+            }
+
+            setSelectedDate(date);
+            scrollAgendaViewTo(date);
+
             return Unit.INSTANCE;
         });
     }
@@ -202,7 +206,9 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     public void scrollTo(LocalDate date) {
-        scrollAgendaViewTo(date);
+        if (today.equals(date)) {
+            setSelectedDate(date);
+        }
         scrollCalendarTo(date);
     }
 
@@ -211,7 +217,7 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     public void scrollCalendarTo(LocalDate date) {
-        calendarView.smoothScrollToMonth(YearMonth.of(date.getYear(), date.getMonth()));
+        calendarView.smoothScrollToDate(date);
     }
 
     public void showCalendar() {
@@ -241,10 +247,17 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     private void setSelectedDate(LocalDate date) {
+        if (selectedDay != null && selectedDay.equals(date)) return;
+
+        if (calendarView.isComputingLayout()) return;
+
         if (selectedDay != null)
             calendarView.notifyDateChanged(selectedDay);
+
         selectedDay = date;
-        calendarView.notifyDateChanged(selectedDay);
+
+        if (selectedDay != null)
+            calendarView.notifyDateChanged(selectedDay);
     }
 
     private class CDayBinder implements DayBinder<DayViewContainer> {
@@ -279,22 +292,21 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     private class DayViewContainer extends ViewContainer {
-        private View view;
         private CalendarDay currentDay;
         private TextView textView;
         private EventIndicatorView indicator;
 
         DayViewContainer(View view, CalenderListener calenderListener) {
             super(view);
-            this.view = view;
             textView = view.findViewById(R.id.calendarDayText);
             indicator = view.findViewById(R.id.eventIndicator);
 
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, calendarDateFontSize);
 
             view.setOnClickListener(v -> {
-                calenderListener.onDayClick(currentDay.getDate());
                 setSelectedDate(currentDay.getDate());
+                scrollAgendaViewTo(currentDay.getDate());
+                calenderListener.onDayClick(currentDay.getDate());
             });
         }
 

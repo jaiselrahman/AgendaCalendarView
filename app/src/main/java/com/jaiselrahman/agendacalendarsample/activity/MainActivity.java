@@ -21,7 +21,6 @@ import com.jaiselrahman.agendacalendarsample.model.Event;
 
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
-import org.threeten.bp.Month;
 import org.threeten.bp.MonthDay;
 import org.threeten.bp.YearMonth;
 import org.threeten.bp.format.DateTimeFormatter;
@@ -75,21 +74,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         agendaCalendar.setListener(new AgendaCalendar.CalenderListener() {
-            private Month lastMonth = MonthDay.now().getMonth();
 
             @Override
             public void onDayClick(LocalDate date) {
-                agendaCalendar.scrollTo(date);
+
             }
 
             @Override
             public void onMonthScroll(YearMonth yearMonth) {
                 currentMonth.setText(dateFormatter.format(yearMonth.getMonth()));
-
-                if (lastMonth != yearMonth.getMonth()) {
-                    agendaCalendar.scrollAgendaViewTo(yearMonth.atDay(1));
-                }
-                lastMonth = yearMonth.getMonth();
             }
 
             @Override
