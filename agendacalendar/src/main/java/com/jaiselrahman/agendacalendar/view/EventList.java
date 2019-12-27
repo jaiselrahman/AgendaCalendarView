@@ -1,5 +1,7 @@
 package com.jaiselrahman.agendacalendar.view;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.paging.AsyncPagedListDiffer;
@@ -139,7 +141,14 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         }
 
         private void refreshEventCache(int positionStart, int itemCount) {
-            for (int i = positionStart; i < positionStart + itemCount; i++) {
+            int end = positionStart + itemCount;
+            if (size() >= end) {
+                EventCache.clearAll();
+                return;
+            }
+            Log.d("EventList", "Refresh " + positionStart + " " + itemCount + " " + size());
+            for (int i = positionStart; i < end; i++) {
+                if (i >= size()) break;
                 EventCache.clear(get(i).getTime().toLocalDate());
             }
             if (onEventSetListener != null)
