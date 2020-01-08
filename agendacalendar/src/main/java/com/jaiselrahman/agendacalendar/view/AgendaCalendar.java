@@ -46,7 +46,7 @@ public class AgendaCalendar extends CoordinatorLayout {
     private static final String[] DAYS_OF_WEEK = DateUtils.getDaysOfWeek();
 
     private LocalDate today = LocalDate.now();
-    private LocalDate selectedDay = null;
+    private LocalDate selectedDay = today;
 
     private CalendarView calendarView;
     private AgendaView agendaView;
@@ -206,10 +206,9 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     public void scrollTo(LocalDate date) {
-        if (today.equals(date)) {
-            setSelectedDate(date);
-        }
         scrollCalendarTo(date);
+        scrollAgendaViewTo(date);
+        setSelectedDate(date);
     }
 
     public void scrollAgendaViewTo(LocalDate date) {
@@ -217,7 +216,9 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     public void scrollCalendarTo(LocalDate date) {
-        calendarView.smoothScrollToDate(date);
+        if (!(selectedDay.getYear() == date.getYear()
+                && selectedDay.getMonthValue() == date.getMonthValue()))
+            calendarView.smoothScrollToDate(date);
     }
 
     public void showCalendar() {

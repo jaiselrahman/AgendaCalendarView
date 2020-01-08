@@ -1,7 +1,5 @@
 package com.jaiselrahman.agendacalendar.view;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.paging.AsyncPagedListDiffer;
@@ -16,6 +14,7 @@ import com.jaiselrahman.agendacalendar.util.EventCache;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -33,7 +32,7 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
 
     public abstract int size();
 
-    public final int indexOf(Object event) {
+    public int indexOf(BaseEvent event) {
         int left = 0, right = size();
         while (left < right) {
             final int middle = (left + right) / 2;
@@ -57,6 +56,10 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         return -1;
     }
 
+    public int possibleIndexOf(BaseEvent event) {
+        return indexOf(event);
+    }
+
     abstract void setOnEventSetListener(OnEventSetListener onEventSetListener);
 
     abstract void setAdapter(RecyclerView.Adapter adapter);
@@ -72,7 +75,6 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
             return null;
         }
     }
-
 
     public static class PagedEventList<E extends BaseEvent> extends EventList<E, PagedList<E>> {
         private OnEventSetListener onEventSetListener;
@@ -136,23 +138,37 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         }
 
         @Override
+        public int possibleIndexOf(BaseEvent event) {
+            if (differ.getCurrentList() == null)
+                return -1;
+            else {
+                int pos = super.indexOf(event);
+                if (pos == -1) {
+                    pos = Collections.binarySearch(differ.getCurrentList().snapshot(), event, BaseEvent::compareTo);
+                    return (pos < 0) ? Math.abs(pos) - 1 : pos;
+                } else {
+                    return pos;
+                }
+            }
+        }
+
+        @Override
         public void setOnEventSetListener(OnEventSetListener onEventSetListener) {
             this.onEventSetListener = onEventSetListener;
         }
 
         private void refreshEventCache(int positionStart, int itemCount) {
             int end = positionStart + itemCount;
-            if (size() >= end) {
+
+            if (size() > end) {
                 EventCache.clearAll();
-                return;
-            }
-            Log.d("EventList", "Refresh " + positionStart + " " + itemCount + " " + size());
-            for (int i = positionStart; i < end; i++) {
-                if (i >= size()) break;
+            } else for (int i = positionStart; i < end && i < size(); i++) {
                 EventCache.clear(get(i).getTime().toLocalDate());
             }
-            if (onEventSetListener != null)
+
+            if (onEventSetListener != null) {
                 onEventSetListener.onEventSet();
+            }
         }
     }
 

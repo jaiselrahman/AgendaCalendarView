@@ -3,10 +3,9 @@ package com.jaiselrahman.agendacalendar.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 
-public interface BaseEvent extends Comparable {
+public interface BaseEvent extends Comparable<BaseEvent> {
 
     @NonNull
     LocalDateTime getTime();
@@ -15,27 +14,11 @@ public interface BaseEvent extends Comparable {
         return 0;
     }
 
-    default int compareTo(Object o) {
+    default int compareTo(BaseEvent o) {
         if (o == null) return -1;
         LocalDateTime curr = getTime(), other;
 
-        if (o instanceof LocalDate) {
-            LocalDate date = (LocalDate) o;
-            if (curr.getYear() == date.getYear()
-                    && curr.getDayOfYear() == date.getDayOfYear()) {
-                return 0;
-            } else {
-                return curr.compareTo(date.atStartOfDay());
-            }
-        }
-
-        if (o instanceof LocalDateTime) {
-            other = (LocalDateTime) o;
-        } else if (o instanceof BaseEvent) {
-            other = ((BaseEvent) o).getTime();
-        } else {
-            throw new ClassCastException("Argument should be instance of Calendar or BaseEvent");
-        }
+        other = o.getTime();
 
         if (curr.getYear() == other.getYear()
                 && curr.getDayOfYear() == other.getDayOfYear()) {
@@ -62,10 +45,14 @@ public interface BaseEvent extends Comparable {
             return time;
         }
 
+        public void setTime(LocalDateTime time) {
+            this.time = time;
+        }
+
         @Override
         public final boolean equals(@Nullable Object other) {
             if (other instanceof Empty) {
-                return compareTo(other) == 0;
+                return compareTo((Empty) other) == 0;
             }
             return super.equals(other);
         }

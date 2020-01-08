@@ -31,6 +31,7 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
         extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     private static final int EVENT = 0;
     private static final int EMPTY_EVENT = 1;
+    private static final BaseEvent.Empty key = new BaseEvent.Empty(null);
 
     private final StickyHeaderAdapter<EventAdapter.HeaderViewHolder> eventStickyHeader =
             new StickyHeaderAdapter<EventAdapter.HeaderViewHolder>() {
@@ -63,7 +64,8 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
     }
 
     private EventCache.Loader eventLoader = time -> {
-        int pos = getPosition(time);
+        key.setTime(time.atStartOfDay());
+        int pos = eventList.indexOf(key);
         if (pos == -1) {
             return Collections.emptyList();
         }
@@ -131,8 +133,9 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
         return eventList.size();
     }
 
-    public int getPosition(LocalDate localDate) {
-        return eventList.indexOf(localDate);
+    public int getAdapterPosition(LocalDate localDate) {
+        key.setTime(localDate.atStartOfDay());
+        return eventList.possibleIndexOf(key);
     }
 
     public List<E> getEventsOn(LocalDate localDate) {

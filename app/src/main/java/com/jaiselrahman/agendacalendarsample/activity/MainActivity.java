@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }, new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
-                .setPageSize(10)
+                .setPageSize(15)
                 .build())
                 .setFetchExecutor(Executors.newSingleThreadExecutor())
                 .setNotifyExecutor(handler::post)

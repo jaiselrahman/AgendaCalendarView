@@ -39,7 +39,11 @@ public class AgendaView extends RecyclerView {
     public void scrollTo(LocalDate localDate) {
         if (eventAdapter == null) return;
 
-        int pos = eventAdapter.getPosition(localDate);
+        int pos = eventAdapter.getAdapterPosition(localDate);
+
+        if (pos >= eventAdapter.getItemCount())
+            pos = eventAdapter.getItemCount() - 1;
+
         if (pos >= 0) {
             linearLayoutManager.scrollToPositionWithOffset(pos, 0);
         }
