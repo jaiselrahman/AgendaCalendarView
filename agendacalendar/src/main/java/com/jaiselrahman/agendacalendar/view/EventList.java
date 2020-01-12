@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.SortedList;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.EventCache;
 
+import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
     }
 
     public abstract void setEvents(T events);
+
+    public abstract List<E> getEvents(LocalDate date);
 
     public abstract E get(int position);
 
@@ -133,6 +136,44 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         }
 
         @Override
+        public List<E> getEvents(LocalDate date) {
+            if (differ.getCurrentList() == null)
+                return Collections.emptyList();
+
+            //noinspection unchecked
+            int pos = Collections.binarySearch(differ.getCurrentList(), date, Comparable::compareTo);
+            if (pos < 0) {
+                return Collections.emptyList();
+            }
+
+
+            List<BaseEvent> events = new ArrayList<>();
+
+            BaseEvent event = differ.getCurrentList().get(pos);
+
+            for (int i = pos - 1; i >= 0; i--) {
+                E prevItem = get(i);
+                if (prevItem.compareTo(event) != 0) break;
+                pos = i;
+            }
+
+            event = differ.getCurrentList().get(pos);
+            events.add(event);
+
+            for (int i = pos + 1; i < differ.getCurrentList().size(); i++) {
+                BaseEvent nextEvent = differ.getCurrentList().get(i);
+                if (event.compareTo(nextEvent) != 0) {
+                    break;
+                } else {
+                    events.add(nextEvent);
+                    event = nextEvent;
+                }
+            }
+            //noinspection unchecked
+            return (List<E>) events;
+        }
+
+        @Override
         public int size() {
             return differ.getItemCount();
         }
@@ -142,12 +183,16 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
             if (differ.getCurrentList() == null)
                 return -1;
             else {
-                int pos = super.indexOf(event);
-                if (pos == -1) {
-                    pos = Collections.binarySearch(differ.getCurrentList().snapshot(), event, BaseEvent::compareTo);
-                    return (pos < 0) ? Math.abs(pos) - 1 : pos;
-                } else {
+                int pos = Collections.binarySearch(differ.getCurrentList(), event, BaseEvent::compareTo);
+                if (pos >= 0) {
+                    for (int i = pos - 1; i >= 0; i--) {
+                        E prevItem = differ.getCurrentList().get(i);
+                        if (prevItem.compareTo(event) != 0) break;
+                        pos = i;
+                    }
                     return pos;
+                } else {
+                    return Math.abs(pos) - 1;
                 }
             }
         }
@@ -160,10 +205,12 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         private void refreshEventCache(int positionStart, int itemCount) {
             int end = positionStart + itemCount;
 
-            if (size() > end) {
+            if (differ.getCurrentList() == null || size() > end) {
                 EventCache.clearAll();
             } else for (int i = positionStart; i < end && i < size(); i++) {
-                EventCache.clear(get(i).getTime().toLocalDate());
+                E event = differ.getCurrentList().get(i);
+                if (event != null)
+                    EventCache.clear(event.getTime().toLocalDate());
             }
 
             if (onEventSetListener != null) {
@@ -245,6 +292,40 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         public E get(int position) {
             //noinspection unchecked
             return (E) eventItems.get(position);
+        }
+
+        @Override
+        public List<E> getEvents(LocalDate date) {
+
+            int pos = eventItems.indexOf(new BaseEvent.Empty(date.atStartOfDay()));
+            if (pos < 0) {
+                return Collections.emptyList();
+            }
+
+            List<BaseEvent> events = new ArrayList<>();
+
+            BaseEvent event = events.get(pos);
+
+            for (int i = pos - 1; i >= 0; i--) {
+                E prevItem = get(i);
+                if (prevItem.compareTo(event) != 0) break;
+                pos = i;
+            }
+
+            event = events.get(pos);
+            events.add(event);
+
+            for (int i = pos + 1; i < events.size(); i++) {
+                BaseEvent nextEvent = events.get(i);
+                if (event.compareTo(nextEvent) != 0) {
+                    break;
+                } else {
+                    events.add(nextEvent);
+                    event = nextEvent;
+                }
+            }
+            //noinspection unchecked
+            return (List<E>) events;
         }
 
         @Override

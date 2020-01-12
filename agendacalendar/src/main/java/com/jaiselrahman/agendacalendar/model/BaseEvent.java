@@ -3,9 +3,10 @@ package com.jaiselrahman.agendacalendar.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 
-public interface BaseEvent extends Comparable<BaseEvent> {
+public interface BaseEvent extends Comparable {
 
     @NonNull
     LocalDateTime getTime();
@@ -14,11 +15,18 @@ public interface BaseEvent extends Comparable<BaseEvent> {
         return 0;
     }
 
-    default int compareTo(BaseEvent o) {
+    default int compareTo(Object o) {
         if (o == null) return -1;
         LocalDateTime curr = getTime(), other;
 
-        other = o.getTime();
+        if (o instanceof BaseEvent)
+            other = ((BaseEvent) o).getTime();
+        else if (o instanceof LocalDateTime)
+            other = (LocalDateTime) o;
+        else if (o instanceof LocalDate)
+            other = ((LocalDate) o).atStartOfDay();
+        else throw new IllegalArgumentException("BaseEvent or LocalDateTime expected");
+
 
         if (curr.getYear() == other.getYear()
                 && curr.getDayOfYear() == other.getDayOfYear()) {

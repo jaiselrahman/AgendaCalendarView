@@ -20,8 +20,6 @@ import org.threeten.bp.format.DateTimeFormatterBuilder;
 import org.threeten.bp.format.TextStyle;
 import org.threeten.bp.temporal.ChronoField;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
@@ -64,28 +62,8 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
     }
 
     private EventCache.Loader eventLoader = time -> {
-        key.setTime(time.atStartOfDay());
-        int pos = eventList.indexOf(key);
-        if (pos == -1) {
-            return Collections.emptyList();
-        }
-
-        List<BaseEvent> events = new ArrayList<>();
-
-        BaseEvent event = eventList.get(pos);
-        events.add(event);
-
-        for (int i = pos + 1; i < eventList.size(); i++) {
-            BaseEvent nextEvent = eventList.get(i);
-            if (event.compareTo(nextEvent) != 0) {
-                break;
-            } else {
-                events.add(nextEvent);
-                event = nextEvent;
-            }
-        }
-
-        return events;
+        //noinspection unchecked
+        return (List<BaseEvent>) eventList.getEvents(time);
     };
 
     final public void setEvents(T events) {

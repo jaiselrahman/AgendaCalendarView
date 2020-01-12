@@ -3,6 +3,7 @@ package com.jaiselrahman.agendacalendarsample.activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.CheckedTextView;
@@ -27,9 +28,9 @@ import org.threeten.bp.format.DateTimeFormatter;
 import org.threeten.bp.format.DateTimeFormatterBuilder;
 import org.threeten.bp.format.TextStyle;
 import org.threeten.bp.temporal.ChronoField;
+import org.threeten.bp.temporal.TemporalAdjusters;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Executors;
 
@@ -114,10 +115,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<Event> callback) {
-                int toPosition = params.pageSize;
+                int start = params.requestedStartPosition;
+                int toPosition = start + params.pageSize;
                 if (toPosition > events.size())
                     toPosition = events.size();
-                callback.onResult(events.subList(0, toPosition), 0);
+                Log.d("AC", "load initial " + start + " " + toPosition);
+                callback.onResult(events.subList(start, toPosition), start, events.size());
             }
 
             @Override
@@ -125,68 +128,64 @@ public class MainActivity extends AppCompatActivity {
                 int toPosition = params.startPosition + params.loadSize;
                 if (toPosition > events.size())
                     toPosition = events.size();
+                Log.d("AC", "load range " + params.startPosition + " " + toPosition);
                 callback.onResult(events.subList(params.startPosition, toPosition));
             }
         }, new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
-                .setPageSize(15)
+                .setPageSize(50)
+                .setPrefetchDistance(1)
                 .build())
+                .setInitialKey(100)
                 .setFetchExecutor(Executors.newSingleThreadExecutor())
                 .setNotifyExecutor(handler::post)
                 .build();
     }
 
     private List<Event> mockEvents() {
+        LocalDateTime date = LocalDateTime.now().minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
         List<Event> events = new ArrayList<>();
-        for (int i = 1; i <= 31; i++) {
+        for (int i = 1; i <= 100; i++) {
+            date = date.plusDays(1);
             if (i % 2 == 0) {
-                events.addAll(getEvents(i, 1));
+                events.addAll(getEvents(date, 1));
             } else if (i % 3 == 0) {
-                events.addAll(getEvents(i, 2));
+                events.addAll(getEvents(date, 2));
             } else if (i % 5 == 0) {
-                events.addAll(getEvents(i, 3));
+                events.addAll(getEvents(date, 3));
             } else if (i == 1) {
-                events.addAll(getEvents(i, 4));
+                events.addAll(getEvents(date, 4));
             }
         }
         return events;
     }
 
-    private List<Event> getEvents(int day, int count) {
+    private List<Event> getEvents(LocalDateTime date, int count) {
         List<Event> events = new ArrayList<>();
-        Calendar cal;
         switch (count) {
             case 4:
-                cal = Calendar.getInstance();
-                cal.set(Calendar.DAY_OF_MONTH, day);
-                events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH),
-                        "Description " + day,
-                        "Location " + day,
-                        LocalDateTime.now().withDayOfMonth(day),
+                events.add(new Event("Event " + date.getDayOfMonth(),
+                        "Description " + date.getDayOfMonth(),
+                        "Location " + date.getDayOfMonth(),
+                        date,
                         Color.RED));
             case 3:
-                cal = Calendar.getInstance();
-                cal.set(Calendar.DAY_OF_MONTH, day);
-                events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH),
-                        "Description " + day,
-                        "Location " + day,
-                        LocalDateTime.now().withDayOfMonth(day),
+                events.add(new Event("Event " + date.getDayOfMonth(),
+                        "Description " + date.getDayOfMonth(),
+                        "Location " + date.getDayOfMonth(),
+                        date,
                         Color.GREEN));
             case 2:
-                cal = Calendar.getInstance();
-                cal.set(Calendar.DAY_OF_MONTH, day);
-                events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH),
-                        "Description " + day,
-                        "Location " + day,
-                        LocalDateTime.now().withDayOfMonth(day),
+                events.add(new Event("Event " + date.getDayOfMonth(),
+                        "Description " + date.getDayOfMonth(),
+                        "Location " + date.getDayOfMonth(),
+                        date,
                         Color.BLUE));
             case 1:
-                cal = Calendar.getInstance();
-                cal.set(Calendar.DAY_OF_MONTH, day);
-                events.add(new Event("Event " + cal.get(Calendar.DAY_OF_MONTH),
-                        "Description " + day,
-                        "Location " + day,
-                        LocalDateTime.now().withDayOfMonth(day),
+                events.add(new Event("Event " + date.getDayOfMonth(),
+                        "Description " + date.getDayOfMonth(),
+                        "Location " + date.getDayOfMonth(),
+                        date,
                         Color.MAGENTA));
         }
         return events;
