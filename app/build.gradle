@@ -1,14 +1,6 @@
 apply plugin: 'com.android.application'
 
 android {
-    signingConfigs {
-        release {
-            storeFile file('/home/jaiselrahman/jaisel.jks')
-            storePassword 'lesiajp20_@#'
-            keyAlias = 'jaisel'
-            keyPassword 'lesiajp20_@#'
-        }
-    }
     compileSdkVersion 28
     buildToolsVersion = '29.0.2'
     defaultConfig {
@@ -23,7 +15,6 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
         }
     }
     compileOptions {
