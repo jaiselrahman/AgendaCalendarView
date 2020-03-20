@@ -37,8 +37,10 @@ import org.threeten.bp.LocalDate;
 import org.threeten.bp.YearMonth;
 import org.threeten.bp.temporal.WeekFields;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import kotlin.Unit;
 
@@ -75,8 +77,19 @@ public class AgendaCalendar extends CoordinatorLayout {
 
     private EventList.OnEventSetListener onEventSetListener = new EventList.OnEventSetListener() {
         @Override
-        public void onEventSet() {
-            calendarView.notifyMonthChanged(YearMonth.now());
+        public <E extends BaseEvent> void onEventSet(List<E> events) {
+            if (events != null) {
+                Set<YearMonth> yearMonths = new HashSet<>();
+
+                for (E event : events) {
+                    YearMonth yearMonth = YearMonth.from(event.getTime());
+
+                    if (yearMonths.add(yearMonth)) {
+                        calendarView.notifyMonthChanged(yearMonth);
+                    }
+                }
+            }
+
             if (onInit) {
                 agendaView.scrollTo(LocalDate.now());
                 onInit = false;

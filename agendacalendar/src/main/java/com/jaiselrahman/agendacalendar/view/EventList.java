@@ -205,16 +205,19 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         private void refreshEventCache(int positionStart, int itemCount) {
             int end = positionStart + itemCount;
 
+            List<E> events = new ArrayList<>();
             if (differ.getCurrentList() == null || size() > end) {
                 EventCache.clearAll();
             } else for (int i = positionStart; i < end && i < size(); i++) {
                 E event = differ.getCurrentList().get(i);
-                if (event != null)
+                if (event != null) {
                     EventCache.clear(event.getTime().toLocalDate());
+                    events.add(event);
+                }
             }
 
             if (onEventSetListener != null) {
-                onEventSetListener.onEventSet();
+                onEventSetListener.onEventSet(events);
             }
         }
     }
@@ -285,7 +288,7 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
             eventItems.endBatchedUpdates();
 
             if (onEventSetListener != null)
-                onEventSetListener.onEventSet();
+                onEventSetListener.onEventSet(events);
         }
 
         @Override
@@ -370,6 +373,6 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
     }
 
     public interface OnEventSetListener {
-        void onEventSet();
+        <E extends BaseEvent> void onEventSet(List<E> events);
     }
 }
