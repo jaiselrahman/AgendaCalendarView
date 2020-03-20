@@ -9,6 +9,8 @@ import androidx.annotation.RestrictTo;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.jaiselrahman.agendacalendar.model.BaseEvent;
+
 import org.threeten.bp.LocalDate;
 
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderDecoration;
@@ -74,5 +76,13 @@ public class AgendaView extends RecyclerView {
             return;
         }
         throw new RuntimeException("Adapter should not be changed");
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
+    final BaseEvent firstVisibleEvent() {
+
+        int pos = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
+        if (pos == NO_POSITION) return null;
+        return eventAdapter.getEvent(pos);
     }
 }

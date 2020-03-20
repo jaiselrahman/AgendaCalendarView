@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
@@ -29,6 +30,7 @@ import com.kizitonwose.calendarview.model.DayOwner;
 import com.kizitonwose.calendarview.model.InDateStyle;
 import com.kizitonwose.calendarview.model.OutDateStyle;
 import com.kizitonwose.calendarview.model.ScrollMode;
+import com.kizitonwose.calendarview.ui.CalendarAdapter;
 import com.kizitonwose.calendarview.ui.DayBinder;
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder;
 import com.kizitonwose.calendarview.ui.ViewContainer;
@@ -174,6 +176,20 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
         calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
 
         agendaView = v.findViewById(R.id.agendaView);
+        agendaView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                BaseEvent event = agendaView.firstVisibleEvent();
+                if (event != null && newState != RecyclerView.SCROLL_STATE_DRAGGING) {
+                    YearMonth yearMonth = YearMonth.from(event.getTime().toLocalDate());
+                    //noinspection KotlinInternalInJava
+                    calendarView.scrollToPosition(((CalendarAdapter) calendarView.getAdapter()).getAdapterPosition$library_release(yearMonth));
+                    if (calendarListener != null) {
+                        calendarListener.onMonthScroll(yearMonth);
+                    }
+                }
+            }
+        });
 
         if (calendarShowAdjacentMonthDate) {
             calendarView.setInDateStyle(InDateStyle.ALL_MONTHS);
@@ -197,6 +213,7 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
         calendarView.scrollToMonth(currentYearMonth);
 
         calendarView.setMonthScrollListener(calendarMonth -> {
+            Log.d("AC", "Scrolled to " + calendarMonth);
             if (currentRowCount != -1 && currentRowCount != calendarMonth.getWeekDays().size()) {
                 TransitionManager.beginDelayedTransition(this, changeBounds);
             }
