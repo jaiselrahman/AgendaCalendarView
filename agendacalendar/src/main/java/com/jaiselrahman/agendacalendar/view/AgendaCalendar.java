@@ -81,6 +81,10 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
     boolean calendarShowAdjacentMonthDate;
     int calendarAdjacentMonthDateColor;
 
+    int agendaDateColor;
+    int agendaCurrentDayColor;
+    int agendaCurrentDayBackgroundRes;
+
     private EventList.OnEventSetListener onEventSetListener = new EventList.OnEventSetListener() {
         @Override
         public <E extends BaseEvent> void onEventSet(List<E> events) {
@@ -139,6 +143,10 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
 
         calendarShowAdjacentMonthDate = a.getBoolean(R.styleable.AgendaCalendar_calendarShowAdjacentMonthDate, false);
         calendarAdjacentMonthDateColor = a.getColor(R.styleable.AgendaCalendar_calendarAdjacentMonthDateColor, res.getColor(android.R.color.secondary_text_dark));
+
+        agendaDateColor = a.getColor(R.styleable.AgendaCalendar_agendaDateColor, res.getColor(android.R.color.primary_text_light));
+        agendaCurrentDayColor = a.getColor(R.styleable.AgendaCalendar_agendaCurrentDayColor, res.getColor(android.R.color.white));
+        agendaCurrentDayBackgroundRes = a.getResourceId(R.styleable.AgendaCalendar_agendaCurrentDayBackground, R.drawable.current_day);
 
         a.recycle();
 
@@ -238,6 +246,9 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
     }
 
     public <E extends BaseEvent, T extends List<E>> void setAdapter(EventAdapter<E, T> eventAdapter) {
+        eventAdapter.setCurrentDayBackground(agendaCurrentDayBackgroundRes);
+        eventAdapter.setCurrentDayTextColor(agendaCurrentDayColor);
+        eventAdapter.setDayTextColor(agendaDateColor);
         eventAdapter.setOnEventSetListener(onEventSetListener);
         agendaView.setAdapter(eventAdapter);
     }

@@ -68,7 +68,7 @@ public class AgendaView extends RecyclerView {
         if (adapter instanceof EventAdapter) {
             eventAdapter = (EventAdapter) adapter;
             super.setAdapter(eventAdapter);
-            addItemDecoration(new StickyHeaderDecoration(eventAdapter.getEventStickyHeader(), false));
+            addItemDecoration(new StickyHeaderDecoration(eventAdapter.getDayHeader(), false));
             return;
         }
         if (isInEditMode()) {
@@ -81,7 +81,7 @@ public class AgendaView extends RecyclerView {
     @RestrictTo(RestrictTo.Scope.LIBRARY)
     final BaseEvent firstVisibleEvent() {
 
-        int pos = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
+        int pos = linearLayoutManager.findFirstVisibleItemPosition();
         if (pos == NO_POSITION) return null;
         return eventAdapter.getEvent(pos);
     }

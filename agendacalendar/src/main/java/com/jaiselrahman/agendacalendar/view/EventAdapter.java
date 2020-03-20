@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jaiselrahman.agendacalendar.R;
@@ -27,12 +28,20 @@ import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
         extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
+    private static final DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder()
+            .appendText(ChronoField.DAY_OF_WEEK, TextStyle.SHORT)
+            .toFormatter();
+
+    private static final DateTimeFormatter monthFormatter = new DateTimeFormatterBuilder()
+            .appendText(ChronoField.MONTH_OF_YEAR, TextStyle.SHORT)
+            .toFormatter();
+
     private static final int EVENT = 0;
     private static final int EMPTY_EVENT = 1;
     private static final BaseEvent.Empty key = new BaseEvent.Empty(null);
 
-    private final StickyHeaderAdapter<EventAdapter.HeaderViewHolder> eventStickyHeader =
-            new StickyHeaderAdapter<EventAdapter.HeaderViewHolder>() {
+    private final StickyHeaderAdapter<HeaderViewHolder> dayHeader =
+            new StickyHeaderAdapter<HeaderViewHolder>() {
 
                 @Override
                 final public long getHeaderId(int position) {
@@ -55,6 +64,10 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
     private OnEventClickListener<E> onEventClickListener;
 
     private EventList<E, T> eventList;
+
+    private int dayTextColor;
+    private int currentDayTextColor;
+    private int currentDayBackground;
 
     public EventAdapter(EventList<E, T> eventList) {
         this.eventList = eventList;
@@ -129,28 +142,55 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
         eventList.setOnEventSetListener(onEventSetListener);
     }
 
-    StickyHeaderAdapter<EventAdapter.HeaderViewHolder> getEventStickyHeader() {
-        return eventStickyHeader;
+    void setCurrentDayBackground(int currentDayBackground) {
+        this.currentDayBackground = currentDayBackground;
     }
 
-    private static class HeaderViewHolder extends RecyclerView.ViewHolder {
-        private TextView day, date;
-        private DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder()
-                .appendText(ChronoField.DAY_OF_WEEK, TextStyle.SHORT)
-                .toFormatter();
+    void setCurrentDayTextColor(int currentDayTextColor) {
+        this.currentDayTextColor = currentDayTextColor;
+    }
+
+    void setDayTextColor(int dayTextColor) {
+        this.dayTextColor = dayTextColor;
+    }
+
+    StickyHeaderAdapter<HeaderViewHolder> getDayHeader() {
+        return dayHeader;
+    }
+
+    private class HeaderViewHolder extends RecyclerView.ViewHolder {
+
+        private TextView day, date, month;
 
         HeaderViewHolder(@NonNull View v) {
             super(v);
             day = v.findViewById(R.id.day);
-            date = v.findViewById(R.id.date);
+            day.setTextColor(ColorUtils.setAlphaComponent(dayTextColor, 0xAA));
 
+            date = v.findViewById(R.id.date);
+            date.setTextColor(dayTextColor);
+
+            month = v.findViewById(R.id.month);
+            month.setTextColor(dayTextColor);
         }
 
         void bind(BaseEvent event) {
             date.setText(String.valueOf(event.getTime().getDayOfMonth()));
             day.setText(dateFormatter.format(event.getTime()));
+
             if (DateUtils.isToday(event.getTime())) {
-                itemView.setBackgroundResource(R.drawable.event_current_item_header);
+                date.setBackgroundResource(currentDayBackground);
+                date.setTextColor(currentDayTextColor);
+            } else {
+                date.setBackground(null);
+                date.setTextColor(dayTextColor);
+            }
+
+            if (event.getTime().getDayOfMonth() == 1) {
+                month.setVisibility(View.VISIBLE);
+                month.setText(monthFormatter.format(event.getTime()));
+            } else {
+                month.setVisibility(View.GONE);
             }
         }
     }
