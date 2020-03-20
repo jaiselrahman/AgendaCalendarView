@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.NestedScrollingChild;
+import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.ChangeBounds;
@@ -44,7 +46,7 @@ import java.util.Set;
 
 import kotlin.Unit;
 
-public class AgendaCalendar extends CoordinatorLayout {
+public class AgendaCalendar extends CoordinatorLayout implements NestedScrollingChild {
     private static final String[] DAYS_OF_WEEK = DateUtils.getDaysOfWeek();
 
     private LocalDate today = LocalDate.now();
@@ -59,6 +61,8 @@ public class AgendaCalendar extends CoordinatorLayout {
     private AppBarLayout calendarViewParent;
 
     private ChangeBounds changeBounds = new ChangeBounds();
+
+    private NestedScrollingChildHelper nestedScrollingChildHelper;
 
     private boolean onInit = true;
     private int currentRowCount = -1;
@@ -111,6 +115,9 @@ public class AgendaCalendar extends CoordinatorLayout {
     }
 
     private void init(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        nestedScrollingChildHelper = new NestedScrollingChildHelper(this);
+        setNestedScrollingEnabled(true);
+
         View v = inflate(context, R.layout.agendar_calendar, this);
 
         Resources res = getResources();
@@ -272,6 +279,113 @@ public class AgendaCalendar extends CoordinatorLayout {
 
         if (selectedDay != null)
             calendarView.notifyDateChanged(selectedDay);
+    }
+
+    @Override
+    public void onNestedPreScroll(View target, int dx, int dy, int[] consumed, int type) {
+        super.onNestedPreScroll(target, dx, dy, consumed, type);
+        dispatchNestedPreScroll(dx, dy, consumed, null);
+    }
+
+    @Override
+    public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
+        super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
+        dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, null);
+    }
+
+    @Override
+    public void onStopNestedScroll(View target, int type) {
+        super.onStopNestedScroll(target, type);
+        stopNestedScroll();
+    }
+
+    @Override
+    public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes, int type) {
+        boolean handled = super.onStartNestedScroll(child, target, nestedScrollAxes, type);
+        return startNestedScroll(nestedScrollAxes) || handled;
+    }
+
+    @Override
+    public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
+        boolean handled = super.onStartNestedScroll(child, target, nestedScrollAxes);
+        return startNestedScroll(nestedScrollAxes) || handled;
+    }
+
+    @Override
+    public void onStopNestedScroll(View target) {
+        super.onStopNestedScroll(target);
+        stopNestedScroll();
+    }
+
+    @Override
+    public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
+        onNestedPreScroll(target, dx, dy, consumed, ViewCompat.TYPE_TOUCH);
+    }
+
+    @Override
+    public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
+                               int dxUnconsumed, int dyUnconsumed) {
+        super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
+        dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, null);
+    }
+
+    @Override
+    public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
+        boolean handled = super.onNestedPreFling(target, velocityX, velocityY);
+        return dispatchNestedPreFling(velocityX, velocityY) || handled;
+    }
+
+    @Override
+    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        boolean handled = super.onNestedFling(target, velocityX, velocityY, consumed);
+        return dispatchNestedFling(velocityX, velocityY, consumed) || handled;
+    }
+
+    @Override
+    public boolean isNestedScrollingEnabled() {
+        return nestedScrollingChildHelper.isNestedScrollingEnabled();
+    }
+
+    @Override
+    public void setNestedScrollingEnabled(boolean enabled) {
+        nestedScrollingChildHelper.setNestedScrollingEnabled(enabled);
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes) {
+        return nestedScrollingChildHelper.startNestedScroll(axes);
+    }
+
+    @Override
+    public void stopNestedScroll() {
+        nestedScrollingChildHelper.stopNestedScroll();
+    }
+
+    @Override
+    public boolean hasNestedScrollingParent() {
+        return nestedScrollingChildHelper.hasNestedScrollingParent();
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed,
+                                        int dyUnconsumed, int[] offsetInWindow) {
+        return nestedScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed,
+                dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
+        return nestedScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
+        return nestedScrollingChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
+        return nestedScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 
     private class CDayBinder implements DayBinder<DayViewContainer> {

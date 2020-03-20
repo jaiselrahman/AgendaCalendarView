@@ -34,6 +34,7 @@ public class AgendaView extends RecyclerView {
         super.setLayoutManager(linearLayoutManager);
 
         setItemAnimator(null);
+        setNestedScrollingEnabled(true);
     }
 
     public void scrollTo(LocalDate localDate) {
