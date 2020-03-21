@@ -57,7 +57,13 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
 
                 @Override
                 public void onBindHeaderViewHolder(HeaderViewHolder headerViewHolder, int position) {
-                    headerViewHolder.bind(eventList.get(position));
+                    BaseEvent event = eventList.get(position);
+                    headerViewHolder.bind(event, showMonth(event, position));
+                }
+
+                private boolean showMonth(BaseEvent event, int position) {
+                    return getHeaderId(position) == getHeaderId(0)
+                            || getEvent(position - 1).getTime().getMonthValue() != event.getTime().getMonthValue();
                 }
             };
 
@@ -174,7 +180,7 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
             month.setTextColor(dayTextColor);
         }
 
-        void bind(BaseEvent event) {
+        void bind(BaseEvent event, boolean showMonth) {
             date.setText(String.valueOf(event.getTime().getDayOfMonth()));
             day.setText(dateFormatter.format(event.getTime()));
 
@@ -186,7 +192,7 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
                 date.setTextColor(dayTextColor);
             }
 
-            if (event.getTime().getDayOfMonth() == 1) {
+            if (showMonth) {
                 month.setVisibility(View.VISIBLE);
                 month.setText(monthFormatter.format(event.getTime()));
             } else {

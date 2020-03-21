@@ -184,6 +184,7 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
         calendarView.setDayWidth(getResources().getDisplayMetrics().widthPixels / 7);
 
         agendaView = v.findViewById(R.id.agendaView);
+        agendaView.setItemAnimator(null);
         agendaView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
