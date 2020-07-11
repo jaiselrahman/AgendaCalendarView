@@ -4,8 +4,10 @@
     android:id="@+id/calendar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:calendarBackground="@android:color/white"
-    app:calendarDateColor="@android:color/black"
+    app:agendaCurrentDayColor="@color/calendarDate"
+    app:agendaDateColor="@color/calendarDate"
+    app:calendarBackground="@color/calendarBackground"
+    app:calendarDateColor="@color/calendarDate"
     app:calendarDateFontSize="12sp"
     app:calendarShowAdjacentMonthDate="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" />

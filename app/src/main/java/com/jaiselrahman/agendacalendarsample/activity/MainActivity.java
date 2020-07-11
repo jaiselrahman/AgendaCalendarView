@@ -1,5 +1,6 @@
 package com.jaiselrahman.agendacalendarsample.activity;
 
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.paging.PagedList;
 import androidx.paging.PositionalDataSource;
@@ -103,6 +105,10 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.today) {
             agendaCalendar.scrollTo(LocalDate.now());
             return true;
+        } else if (item.getItemId() == R.id.toggleNightMode) {
+            boolean isNightMode = (getResources().getConfiguration().uiMode &
+                    Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+            AppCompatDelegate.setDefaultNightMode(isNightMode ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES);
         }
         return super.onOptionsItemSelected(item);
     }

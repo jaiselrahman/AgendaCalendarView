@@ -2,8 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/toggleNightMode"
+        android:icon="@drawable/ic_night_mode"
+        android:title="@string/toggleNightMode"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/today"
-        android:title="@string/today"
         android:icon="@drawable/ic_today"
+        android:title="@string/today"
         app:showAsAction="ifRoom" />
 </menu>

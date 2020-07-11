@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">AgendaCalendar</string>
     <string name="today">Today</string>
+    <string name="toggleNightMode">Toggle night mode</string>
 </resources>

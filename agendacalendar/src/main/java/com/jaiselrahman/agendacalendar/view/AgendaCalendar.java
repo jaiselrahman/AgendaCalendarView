@@ -1,6 +1,7 @@
 package com.jaiselrahman.agendacalendar.view;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
@@ -17,6 +18,7 @@ import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.elevation.ElevationOverlayProvider;
 import com.jaiselrahman.agendacalendar.R;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
@@ -62,6 +64,8 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
     private NestedScrollingChildHelper nestedScrollingChildHelper;
 
     private boolean onInit = true;
+
+    int calendarBackgroundColor;
 
     int calendarDateColor;
     float calendarDateFontSize;
@@ -124,7 +128,7 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.AgendaCalendar, defStyleAttr, 0);
 
-        int calendarBackgroundColor = a.getColor(R.styleable.AgendaCalendar_calendarBackground, res.getColor(R.color.colorPrimary));
+        calendarBackgroundColor = a.getColor(R.styleable.AgendaCalendar_calendarBackground, res.getColor(R.color.colorPrimary));
         calendarDateColor = a.getColor(R.styleable.AgendaCalendar_calendarDateColor, res.getColor(android.R.color.primary_text_dark));
         calendarDateFontSize = a.getDimensionPixelOffset(R.styleable.AgendaCalendar_calendarDateFontSize,
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, res.getDisplayMetrics()));
@@ -217,11 +221,6 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
         calendarView.scrollToMonth(currentYearMonth);
 
         calendarView.setMonthScrollListener(calendarMonth -> {
-//            Log.d("AC", "Scrolled to " + calendarMonth);
-//            if (currentRowCount != -1 && currentRowCount != calendarMonth.getWeekDays().size()) {
-//                TransitionManager.beginDelayedTransition(this, changeBounds);
-//            }
-//            currentRowCount = calendarMonth.getWeekDays().size();
 
             if (calendarListener != null) {
                 calendarListener.onMonthScroll(calendarMonth.getYearMonth());
@@ -275,6 +274,14 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
 
     public void hideElevationFor(@NonNull AppBarLayout toolbar) {
         this.hideElevationFor = toolbar;
+
+        if (isNightMode()) {
+            calendarBackgroundColor = new ElevationOverlayProvider(getContext()).compositeOverlayIfNeeded(calendarBackgroundColor, 4, calendarViewParent);
+            calendarViewParent.setBackgroundColor(calendarBackgroundColor);
+
+            ViewCompat.setElevation(toolbar, 0);
+            toolbar.setBackgroundColor(calendarBackgroundColor);
+        }
     }
 
     public void setListener(CalendarListener calendarListener) {
@@ -526,5 +533,10 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
                 weekDays[i].setTextColor(calendarDateColor);
             }
         }
+    }
+
+    private boolean isNightMode() {
+        return (getContext().getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
 }
