@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.SortedList;
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.EventCache;
 
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.temporal.ChronoUnit;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,7 +65,7 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
 
     abstract void setOnEventSetListener(OnEventSetListener onEventSetListener);
 
-    abstract void setAdapter(RecyclerView.Adapter adapter);
+    abstract void setAdapter(RecyclerView.Adapter<?> adapter);
 
     public static abstract class EventCallback<T> {
 
@@ -88,7 +88,7 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         }
 
         @Override
-        void setAdapter(RecyclerView.Adapter adapter) {
+        void setAdapter(RecyclerView.Adapter<?> adapter) {
             adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
 
                 @Override
@@ -224,7 +224,7 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
 
     public static class SortedEventList<E extends BaseEvent> extends EventList<E, List<E>> {
         private OnEventSetListener onEventSetListener;
-        private RecyclerView.Adapter adapter;
+        private RecyclerView.Adapter<?> adapter;
         private EventCallback<E> eventCallback;
 
         public SortedEventList(EventCallback<E> eventCallback) {
@@ -233,7 +233,7 @@ public abstract class EventList<E extends BaseEvent, T extends List<E>> {
         }
 
         @Override
-        void setAdapter(RecyclerView.Adapter adapter) {
+        void setAdapter(RecyclerView.Adapter<?> adapter) {
             this.adapter = adapter;
         }
 

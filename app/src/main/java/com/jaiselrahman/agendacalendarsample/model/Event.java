@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
-import org.threeten.bp.LocalDateTime;
+import java.time.LocalDateTime;
 
 public class Event implements BaseEvent {
     private String title, description, location;

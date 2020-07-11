@@ -5,8 +5,7 @@ import androidx.collection.LongSparseArray;
 
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
-import org.threeten.bp.LocalDate;
-
+import java.time.LocalDate;
 import java.util.List;
 
 public class EventCache {

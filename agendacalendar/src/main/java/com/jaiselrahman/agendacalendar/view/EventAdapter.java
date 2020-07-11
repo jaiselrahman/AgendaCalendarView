@@ -14,12 +14,12 @@ import com.jaiselrahman.agendacalendar.model.BaseEvent;
 import com.jaiselrahman.agendacalendar.util.DateUtils;
 import com.jaiselrahman.agendacalendar.util.EventCache;
 
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.LocalDateTime;
-import org.threeten.bp.format.DateTimeFormatter;
-import org.threeten.bp.format.DateTimeFormatterBuilder;
-import org.threeten.bp.format.TextStyle;
-import org.threeten.bp.temporal.ChronoField;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoField;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderAdapter;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
-        extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
+        extends RecyclerView.Adapter<EventAdapter.EventViewHolder<?>> {
     private static final DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder()
             .appendText(ChronoField.DAY_OF_WEEK, TextStyle.SHORT)
             .toFormatter();
@@ -95,10 +95,9 @@ public abstract class EventAdapter<E extends BaseEvent, T extends List<E>>
 
     @NonNull
     @Override
-    final public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    final public EventViewHolder<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == EVENT) {
-            EventViewHolder holder = createEventViewHolder(parent);
-            //noinspection unchecked
+            EventViewHolder<E> holder = createEventViewHolder(parent);
             holder.setOnEventClickListener(onEventClickListener);
             return holder;
         } else {

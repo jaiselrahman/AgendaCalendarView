@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
@@ -16,8 +15,6 @@ import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.transition.ChangeBounds;
-import androidx.transition.TransitionManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.jaiselrahman.agendacalendar.R;
@@ -36,11 +33,11 @@ import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder;
 import com.kizitonwose.calendarview.ui.ViewContainer;
 
 import org.jetbrains.annotations.NotNull;
-import org.threeten.bp.DayOfWeek;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.YearMonth;
-import org.threeten.bp.temporal.WeekFields;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.temporal.WeekFields;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -62,12 +59,9 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
     private View hideElevationFor = null;
     private AppBarLayout calendarViewParent;
 
-    private ChangeBounds changeBounds = new ChangeBounds();
-
     private NestedScrollingChildHelper nestedScrollingChildHelper;
 
     private boolean onInit = true;
-    private int currentRowCount = -1;
 
     int calendarDateColor;
     float calendarDateFontSize;
@@ -191,8 +185,9 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
                 BaseEvent event = agendaView.firstVisibleEvent();
                 if (event != null && newState != RecyclerView.SCROLL_STATE_DRAGGING) {
                     YearMonth yearMonth = YearMonth.from(event.getTime().toLocalDate());
-                    //noinspection KotlinInternalInJava
-                    calendarView.scrollToPosition(((CalendarAdapter) calendarView.getAdapter()).getAdapterPosition$library_release(yearMonth));
+                    //noinspection ConstantConditions,KotlinInternalInJava
+                    calendarView.scrollToPosition(((CalendarAdapter) calendarView.getAdapter())
+                            .getAdapterPosition$com_github_kizitonwose_CalendarView(yearMonth));
                     if (calendarListener != null) {
                         calendarListener.onMonthScroll(yearMonth);
                     }
@@ -222,11 +217,11 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
         calendarView.scrollToMonth(currentYearMonth);
 
         calendarView.setMonthScrollListener(calendarMonth -> {
-            Log.d("AC", "Scrolled to " + calendarMonth);
-            if (currentRowCount != -1 && currentRowCount != calendarMonth.getWeekDays().size()) {
-                TransitionManager.beginDelayedTransition(this, changeBounds);
-            }
-            currentRowCount = calendarMonth.getWeekDays().size();
+//            Log.d("AC", "Scrolled to " + calendarMonth);
+//            if (currentRowCount != -1 && currentRowCount != calendarMonth.getWeekDays().size()) {
+//                TransitionManager.beginDelayedTransition(this, changeBounds);
+//            }
+//            currentRowCount = calendarMonth.getWeekDays().size();
 
             if (calendarListener != null) {
                 calendarListener.onMonthScroll(calendarMonth.getYearMonth());
@@ -284,6 +279,7 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
 
     public void setListener(CalendarListener calendarListener) {
         this.calendarListener = calendarListener;
+        //noinspection ConstantConditions
         ((CDayBinder) calendarView.getDayBinder()).setCalendarListener(calendarListener);
     }
 
@@ -433,7 +429,7 @@ public class AgendaCalendar extends CoordinatorLayout implements NestedScrolling
 
         @Override
         public void bind(@NonNull DayViewContainer container, @NotNull CalendarDay day) {
-            //noinspection unchecked
+            @SuppressWarnings({"unchecked", "rawtypes", "ConstantConditions"})
             List<BaseEvent> events = ((EventAdapter) agendaView.getAdapter()).getEventsOn(day.getDate());
 
             int[] eventColors = new int[events.size()];

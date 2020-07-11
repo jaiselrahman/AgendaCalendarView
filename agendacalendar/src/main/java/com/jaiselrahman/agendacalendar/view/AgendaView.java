@@ -11,11 +11,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.jaiselrahman.agendacalendar.model.BaseEvent;
 
-import org.threeten.bp.LocalDate;
+import java.time.LocalDate;
 
 import ca.barrenechea.widget.recyclerview.decoration.StickyHeaderDecoration;
 
 public class AgendaView extends RecyclerView {
+    @SuppressWarnings("rawtypes")
     private EventAdapter eventAdapter = null;
     private LinearLayoutManager linearLayoutManager;
 
@@ -66,6 +67,7 @@ public class AgendaView extends RecyclerView {
     @RestrictTo(RestrictTo.Scope.LIBRARY)
     public final void setAdapter(@Nullable Adapter adapter) {
         if (adapter instanceof EventAdapter) {
+            //noinspection rawtypes
             eventAdapter = (EventAdapter) adapter;
             super.setAdapter(eventAdapter);
             addItemDecoration(new StickyHeaderDecoration(eventAdapter.getDayHeader(), false));

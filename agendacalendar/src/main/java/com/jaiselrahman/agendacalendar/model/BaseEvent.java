@@ -3,9 +3,10 @@ package com.jaiselrahman.agendacalendar.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+@SuppressWarnings("rawtypes")
 public interface BaseEvent extends Comparable {
 
     @NonNull

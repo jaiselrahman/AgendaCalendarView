@@ -15,6 +15,7 @@
             android:id="@+id/calendarView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:cv_wrappedPageHeightAnimationDuration="150"
             app:layout_scrollFlags="scroll|snap" />
 
     </com.google.android.material.appbar.AppBarLayout>

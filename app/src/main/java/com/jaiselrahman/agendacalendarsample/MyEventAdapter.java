@@ -13,8 +13,8 @@ import com.jaiselrahman.agendacalendar.view.EventAdapter;
 import com.jaiselrahman.agendacalendar.view.EventList;
 import com.jaiselrahman.agendacalendarsample.model.Event;
 
-import org.threeten.bp.format.DateTimeFormatter;
-import org.threeten.bp.format.FormatStyle;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 public class MyEventAdapter extends EventAdapter<Event, PagedList<Event>> {
 

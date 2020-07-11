@@ -31,8 +31,8 @@ public class EventIndicatorView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        padding = radius = MeasureSpec.getSize(heightMeasureSpec) / 2;
-        offset = MeasureSpec.getSize(widthMeasureSpec) / 2;
+        padding = radius = MeasureSpec.getSize(heightMeasureSpec) >> 1;
+        offset = MeasureSpec.getSize(widthMeasureSpec) >> 1;
     }
 
     public void setEventColors(int[] eventColors) {
